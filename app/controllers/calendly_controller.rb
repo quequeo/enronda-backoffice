@@ -4,9 +4,7 @@ class CalendlyController < ApplicationController
   end
 
   def scheduled_events
-    byebug
-    token = 'eyJraWQiOiIxY2UxZTEzNjE3ZGNmNzY2YjNjZWJjY2Y4ZGM1YmFmYThhNjVlNjg0MDIzZjdjMzJiZTgzNDliMjM4MDEzNWI0IiwidHlwIjoiUEFUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJodHRwczovL2F1dGguY2FsZW5kbHkuY29tIiwiaWF0IjoxNzE4MTM4MDA5LCJqdGkiOiIzYmI2NmRjNi0zNzdkLTRhODEtYjRmZS0wM2M1MGMwMGYxMWYiLCJ1c2VyX3V1aWQiOiJmZWU0MmY2Zi0wNDNkLTQwMmEtYjM2MS1lMDdhNTdiYjhjM2EifQ.L7ROV_TzVwzXuOmQCqDwESdf76kOZ0kOFEF73zmBzljSFC8-x0Iu3Js-xbqWKEUhYnsYW3shUDlFBIDSAlj0Iw'
-
+    token = ENV['CALENDLY_API_TOKEN']
     response = HTTParty.get('https://api.calendly.com/scheduled_events',
                             headers: {
                               'Authorization' => "Bearer #{token}",
