@@ -1,31 +1,61 @@
-<h1>Events</h1>
+<h1 class="text-2xl font-bold mb-6">Calendly Events</h1>
+
+<%= form_tag(calendly_events_path, method: :get) do %>
+  <div class="flex flex-wrap items-center mb-4">
+    <div class="w-full sm:w-auto mb-2 sm:mb-0">
+      <label class="block text-gray-700 mr-2">Status:</label>
+      <%= select_tag :status, options_for_select([["All", ""], ["Active", "active"], ["Canceled", "canceled"]]), class: "form-select w-full sm:w-auto rounded-lg" %>
+    </div>
+
+    <div class="w-full sm:w-auto mb-2 sm:mb-0">
+      <label class="block text-gray-700 mr-2">Minimum Start Time:</label>
+      <%= text_field_tag :min_start_time, nil, class: "form-input w-full sm:w-auto rounded-lg" %>
+    </div>
+
+    <div class="w-full sm:w-auto mb-2 sm:mb-0">
+      <label class="block text-gray-700 mr-2">Maximum Start Time:</label>
+      <%= text_field_tag :max_start_time, nil, class: "form-input w-full sm:w-auto rounded-lg" %>
+    </div>
+
+    <div class="w-full sm:w-auto">
+      <%= submit_tag "Filter", class: "bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full" %>
+    </div>
+  </div>
+<% end %>
+
 <% if @events.empty? %>
-  <p>No events found</p>
+  <p class="text-purple-600">No events found</p>
 <% else %>
-  <table>
-    <thead>
-      <tr>
-        <th>Event Name</th>
-        <th>Start Time</th>
-        <th>Status</th>
-        <th>Created At</th>
-        <th>End Time</th>
-        <th>User Email</th>
-        <th>User Name</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @events.each do |event| %>
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white border border-purple-400">
+      <thead>
         <tr>
-          <td><%= event['name'] %></td>
-          <td><%= event['start_time'] %></td>
-          <td><%= event['status'] %></td>
-          <td><%= event['created_at'] %></td>
-          <td><%= event['end_time'] %></td>
-          <td><%= event['event_memberships'][0]['user_email'] %></td>
-          <td><%= event['event_memberships'][0]['user_name'] %></td>
+          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Event Name</th>
+          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Start Time</th>
+          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Status</th>
+          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Created At</th>
+          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">End Time</th>
+          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">User Email</th>
+          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">User Name</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% @events.each do |event| %>
+          <tr class="hover:bg-purple-200">
+            <td class="py-2 px-4 border-b border-purple-200"><%= event['name'] %></td>
+            <td class="py-2 px-4 border-b border-purple-200"><%= Time.parse(event['start_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M:%S %Z") %></td>
+            <td class="py-2 px-4 border-b border-purple-200"><%= event['status'] %></td>
+            <td class="py-2 px-4 border-b border-purple-200"><%= Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M:%S %Z") %></td>
+            <td class="py-2 px-4 border-b border-purple-200"><%= Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M:%S %Z") %></td>
+            <td class="py-2 px-4 border-b border-purple-200"><%= event['event_memberships'][0]['user_email'] %></td>
+            <td class="py-2 px-4 border-b border-purple-200"><%= event['event_memberships'][0]['user_name'] %></td>
+          </tr>
+        <% end %>
+        
+        <div class="flex my-4">
+          <%= will_paginate @events %>
+        </div>
+      </tbody>
+    </table>
+  </div>
 <% end %>

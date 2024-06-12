@@ -1,8 +1,5 @@
 class CalendlyController < ApplicationController
 
-  def welcome
-  end
-
   require 'base64'
 
   def auth
@@ -31,6 +28,8 @@ class CalendlyController < ApplicationController
     end
   end
 
+  require 'will_paginate/array'
+
   def events
     access_token = CalendlyOAuth.last&.access_token
     organization = CalendlyOAuth.last&.organization
@@ -39,21 +38,29 @@ class CalendlyController < ApplicationController
       flash[:error] = "No se ha obtenido el token de acceso o la organización"
       redirect_to root_path
     else
+
+      query_params = {
+        organization: "https://api.calendly.com/organizations/#{organization}",
+        count: 100,
+        min_start_time: (Time.now - 90.days).iso8601
+      }
+
+      query_params[:status] = params[:status] unless params[:status].blank?
+      query_params[:min_start_time] = params[:min_start_time] unless params[:min_start_time].blank?
+      query_params[:max_start_time] = params[:max_start_time] unless params[:max_start_time].blank?
+
       response = HTTParty.get(
         'https://api.calendly.com/scheduled_events',
         headers: {
           'Authorization' => "Bearer #{access_token}",
           'Content-Type' => 'application/json'
         },
-        query: {
-          organization: "https://api.calendly.com/organizations/#{organization}",
-          count: 100,
-          min_start_time: (Time.now - 90.days).iso8601
-        }
+        query: query_params
       )
 
       if response.success?
         @events = response.parsed_response['collection']
+        @events = @events.paginate(page: params[:page], per_page: 15)
       else
         flash[:error] = "Error al obtener los eventos programados de Calendly: #{response.code} - #{response.message}"
         redirect_to root_path

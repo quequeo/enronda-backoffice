@@ -1,5 +1,9 @@
 Rails.application.routes.draw do
-  root 'calendly#welcome'
+  root 'static_pages#home'
+  # get 'static_pages/about'
+  # get 'static_pages/contact'
+  # get 'static_pages/privacy_policy'
+  # get 'static_pages/terms_of_service'
 
   get 'calendly/auth', to: 'calendly#auth'
   get 'calendly/callback', to: 'calendly#callback'
