@@ -31,8 +31,9 @@ class CalendlyController < ApplicationController
   require 'will_paginate/array'
 
   def events
-    access_token = CalendlyOAuth.last&.access_token
-    organization = CalendlyOAuth.last&.organization
+    calendly_oauth = CalendlyOAuth.last
+    access_token = calendly_oauth&.access_token
+    organization = calendly_oauth&.organization
 
     if access_token.nil? || organization.nil?
       flash[:error] = "No se ha obtenido el token de acceso o la organización"
@@ -61,13 +62,41 @@ class CalendlyController < ApplicationController
       if response.success?
         @events = response.parsed_response['collection']
         @events = @events.paginate(page: params[:page], per_page: 15)
+      elsif response.code == 401
+        new_tokens = renew_access_token(calendly_oauth.refresh_token)
+        if new_tokens
+          calendly_oauth.update(
+            access_token: new_tokens['access_token'],
+            refresh_token: new_tokens['refresh_token']
+          )
+  
+          # Retry the request with the new access token
+          response = HTTParty.get(
+            'https://api.calendly.com/scheduled_events',
+            headers: {
+              'Authorization' => "Bearer #{new_tokens['access_token']}",
+              'Content-Type' => 'application/json'
+            },
+            query: query_params
+          )
+  
+          if response.success?
+            @events = response.parsed_response['collection']
+            @events = @events.paginate(page: params[:page], per_page: 15)
+          else
+            flash[:error] = "Error al obtener los eventos programados de Calendly: #{response.code} - #{response.message}"
+            redirect_to root_path
+          end
+        else
+          flash[:error] = "No se ha podido renovar el token de acceso"
+          redirect_to root_path
+        end
       else
         flash[:error] = "Error al obtener los eventos programados de Calendly: #{response.code} - #{response.message}"
         redirect_to root_path
       end
     end
   end
-
   private
 
   def get_access_token(authorization_code)
@@ -89,5 +118,31 @@ class CalendlyController < ApplicationController
 
     response = HTTParty.post('https://auth.calendly.com/oauth/token', headers: headers, body: body)
     response.parsed_response
+  end
+
+  def renew_access_token(refresh_token)
+    client_id = ENV['CALENDLY_CLIENT_ID']
+    client_secret = ENV['CALENDLY_CLIENT_SECRET']
+    redirect_uri = ENV['CALENDLY_REDIRECT_URI']
+  
+    response = HTTParty.post(
+      'https://auth.calendly.com/oauth/token',
+      headers: {
+        'Content-Type' => 'application/json'
+      },
+      body: {
+        grant_type: 'refresh_token',
+        refresh_token: refresh_token,
+        client_id: client_id,
+        client_secret: client_secret,
+        redirect_uri: redirect_uri
+      }.to_json
+    )
+  
+    if response.success?
+      response.parsed_response
+    else
+      nil
+    end
   end
 end
