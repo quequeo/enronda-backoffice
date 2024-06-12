@@ -1,0 +1,39 @@
+[
+    {
+        "calendar_event"=>{
+        "external_id"=>"e1edcf282h1ibdkjqssv6v7inc", 
+        "kind"=>"google"
+        }, 
+        "cancellation"=>{
+            "canceled_by"=>"Enronda", 
+            "canceler_type"=>"host", 
+            "created_at"=>"2024-02-02T17:12:52.763513Z", 
+            "reason"=>""
+        }, 
+        "created_at"=>"2024-02-02T17:07:27.167454Z", 
+        "end_time"=>"2024-03-29T20:00:00.000000Z", 
+        "event_guests"=>[], 
+        "event_memberships"=>[
+            {
+                "user"=>"https://api.calendly.com/users/fee42f6f-043d-402a-b361-e07a57bb8c3a", 
+                "user_email"=>"hola@enronda.com", 
+                "user_name"=>"Enronda"
+            }
+        ], 
+        "event_type"=>"https://api.calendly.com/event_types/b0aa3f27-7f63-4674-b36b-3e99f75624e5", 
+        "invitees_counter"=>{
+            "active"=>0, "limit"=>1, "total"=>1
+        }, 
+        "location"=>{
+            "join_url"=>"https://calendly.com/events/ccf29e77-6427-4f40-91e9-d377fdaa7c30/google_meet", 
+            "status"=>"pushed", 
+            "type"=>"google_conference"
+        }, 
+        "meeting_notes_html"=>nil,
+        "meeting_notes_plain"=>nil, 
+        "name"=>"Astrología con Juana", 
+        "start_time"=>"2024-03-29T19:00:00.000000Z", 
+        "status"=>"canceled", 
+        "updated_at"=>"2024-02-02T17:12:53.871724Z", 
+        "uri"=>"https://api.calendly.com/scheduled_events/ccf29e77-6427-4f40-91e9-d377fdaa7c30"
+    }
