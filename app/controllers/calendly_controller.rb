@@ -32,8 +32,8 @@ class CalendlyController < ApplicationController
   end
 
   def events
-    access_token = CalendlyOAuth.last.access_token
-    organization = CalendlyOAuth.last.organization
+    access_token = CalendlyOAuth.last&.access_token
+    organization = CalendlyOAuth.last&.organization
 
     if access_token.nil? || organization.nil?
       flash[:error] = "No se ha obtenido el token de acceso o la organización"
