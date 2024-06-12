@@ -1,33 +1,35 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Enronda Backoffice</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
-    <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+<head>
+  <title>Enronda Backoffice</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
-    <%= favicon_link_tag 'favicon.ico' %>
-  </head>
+  <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+  <%= favicon_link_tag 'favicon.ico' %>
+</head>
 
-  <body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8"> <!-- Agregado py-8 para espacio vertical -->
-      <header class="mb-8"> <!-- Agregado mb-8 para espacio vertical -->
-        <%= render 'layouts/header' %>
-      </header>
+<body class="bg-gray-100">
+  <div class="container mx-auto px-4 py-8">
 
-      <main class="mb-8"> <!-- Agregado mb-8 para espacio vertical -->
-        <% flash.each do |key, value| %>
-          <div class="flash <%= key %>"><%= value %></div>
-        <% end %>
-        <%= yield %>
-      </main>
+    <header class="mb-8">
+      <%= render 'layouts/header' %>
+    </header>
 
-      <footer>
-        <%= render 'layouts/footer' %>
-      </footer>
-    </div>
-  </body>
+    <main class="mb-8">
+      <% flash.each do |key, value| %>
+        <div class="flash <%= key %>"><%= value %></div>
+      <% end %>
+      <%= yield %>
+    </main>
+
+    <footer>
+      <%= render 'layouts/footer' %>
+    </footer>
+  </div>
+
+</body>
 </html>
