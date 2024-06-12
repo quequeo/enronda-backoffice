@@ -1,0 +1,2 @@
+class CalendlyOAuth < ApplicationRecord
+end
