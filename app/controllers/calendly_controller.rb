@@ -63,18 +63,18 @@ class CalendlyController < ApplicationController
         @events = response.parsed_response['collection']
         @events = @events.paginate(page: params[:page], per_page: 15)
       elsif response.code == 401
-        new_tokens = renew_access_token(calendly_oauth.refresh_token)
-        if new_tokens
+        new_token = renew_access_token(calendly_oauth.refresh_token)
+        if new_token
           calendly_oauth.update(
-            access_token: new_tokens['access_token'],
-            refresh_token: new_tokens['refresh_token']
+            access_token: new_token['access_token'],
+            refresh_token: new_token['refresh_token']
           )
   
           # Retry the request with the new access token
           response = HTTParty.get(
             'https://api.calendly.com/scheduled_events',
             headers: {
-              'Authorization' => "Bearer #{new_tokens['access_token']}",
+              'Authorization' => "Bearer #{new_token['access_token']}",
               'Content-Type' => 'application/json'
             },
             query: query_params
