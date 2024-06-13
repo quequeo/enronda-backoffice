@@ -13,23 +13,34 @@
 </head>
 
 <body class="bg-gray-100">
+  <header class="bg-purple-600 text-white py-4">
+    <div class="container mx-auto flex justify-between items-center">
+      <div class="text-2xl font-bold text-white">
+        Enronda
+      </div>
+      <div>
+        <% if user_signed_in? %>
+          <%= link_to 'Logout', destroy_user_session_path, method: :delete, class: "bg-purple-700 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded" %>
+        <% else %>
+          <%= link_to 'Login', new_user_session_path, class: "bg-purple-700 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded" %>
+        <% end %>
+      </div>
+    </div>
+  </header>
+
   <div class="container mx-auto px-4 py-8">
-
-    <header class="mb-8">
-      <%= render 'layouts/header' %>
-    </header>
-
     <main class="mb-8">
       <% flash.each do |key, value| %>
         <div class="flash <%= key %>"><%= value %></div>
       <% end %>
       <%= yield %>
     </main>
-
-    <footer>
-      <%= render 'layouts/footer' %>
-    </footer>
   </div>
 
+  <footer class="bg-gray-200 py-4 text-center rounded-t-lg fixed bottom-0 w-full left-0">
+    <%= render 'layouts/footer' %>
+  </footer>
+
+  <%= javascript_include_tag "application", crossorigin: "anonymous", "data-turbo-track": "reload" %>
 </body>
 </html>

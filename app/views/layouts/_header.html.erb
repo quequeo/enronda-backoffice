@@ -1,12 +1,15 @@
-<header>
-<h1 class="text-4xl font-bold text-purple-600 my-6">Enronda Backoffice</h1>
-  <!--
-  <nav>
-    <ul>
-      <li><%= link_to 'Home', root_path %></li>
-      <li><a href="javascript:void(0)">About</a></li>
-      <li><a href="javascript:void(0)">Contact</a></li>
-    </ul>
-  </nav>
-  -->
+<header class="bg-purple-600 text-white py-4">
+  <div class="container mx-auto flex justify-between items-center">
+    <div class="text-2xl font-bold">
+      Enronda
+    </div>
+    <div>
+    <% if user_signed_in? %>
+      <%= link_to 'Logout', destroy_user_session_path, data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
+    <% else %>
+      <%= link_to 'Login', new_user_session_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
+    <% end %>
+  </div>
+  
+  </div>
 </header>
