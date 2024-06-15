@@ -1,0 +1,41 @@
+<h1 class="text-2xl font-bold mb-4">Editing Professional</h1>
+
+<%= form_with(model: @professional, local: true, class: 'bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4') do |form| %>
+  <% if @professional.errors.any? %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      <h2 class="font-bold mb-2"><%= pluralize(@professional.errors.count, "error") %> prohibited this professional from being saved:</h2>
+      <ul class="list-disc ml-4">
+        <% @professional.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-4">
+    <%= form.label :name, class: 'block text-gray-700 font-bold mb-2' %>
+    <%= form.text_field :name, class: 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' %>
+  </div>
+
+  <div class="mb-4">
+    <%= form.label :token, class: 'block text-gray-700 font-bold mb-2' %>
+    <%= form.text_field :token, class: 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' %>
+  </div>
+
+  <div class="mb-4">
+    <%= form.label :phone, class: 'block text-gray-700 font-bold mb-2' %>
+    <%= form.text_field :phone, class: 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' %>
+  </div>
+
+  <div class="mb-4">
+    <%= form.label :email, class: 'block text-gray-700 font-bold mb-2' %>
+    <%= form.email_field :email, class: 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' %>
+  </div>
+
+  <div class="flex items-center justify-between">
+    <%= form.submit 'Update Professional', class: 'bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded mt-4 inline-block focus:outline-none focus:shadow-outline' %>
+    <%= link_to 'Cancel', @professional, class: 'text-gray-600 hover:text-gray-800 font-bold' %>
+  </div>
+<% end %>
+
+<%= link_to 'Back to Professionals', professionals_path, class: 'text-purple-500 hover:text-purple-700 font-bold' %>

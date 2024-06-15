@@ -12,5 +12,13 @@ Rails.application.routes.draw do
   get 'calendly/auth', to: 'calendly#auth'
   get 'calendly/callback', to: 'calendly#callback'
   post 'calendly/get_token', to: 'calendly#get_token'
-  get 'calendly/events'
+  get 'calendly/events', to: 'calendly#events'
+
+  resources :professionals do
+    member do
+      delete :destroy, as: :delete
+    end
+  end
+  
+  get '/calendly', to: 'calendly#index'
 end

@@ -1,6 +1,7 @@
 class CalendlyController < ApplicationController
 
   require 'base64'
+  require 'will_paginate/array'
 
   def auth
     @client_id = ENV['CALENDLY_CLIENT_ID']
@@ -27,8 +28,36 @@ class CalendlyController < ApplicationController
       redirect_to root_path
     end
   end
+  
 
-  require 'will_paginate/array'
+  def index
+    @professional = Professional.find(params[:professional_id])
+
+    start_date = params[:start_date].presence || (Time.now - 1.month).strftime('%Y-%m-%d')
+    end_date = params[:end_date] || Time.now.strftime('%Y-%m-%d')
+
+    response_me = HTTParty.get('https://api.calendly.com/users/me',
+      headers: { 'Authorization' => "Bearer #{token = @professional.token}", 'Content-Type' => 'application/json' }
+    )
+
+    if response_me.success?
+      response_events = HTTParty.get('https://api.calendly.com/scheduled_events',
+        headers: { 'Authorization' => "Bearer #{@professional.token}", 'Content-Type' => 'application/json' },
+        query: { organization: response_me['resource']['current_organization'], min_start_time: start_date, max_start_time: end_date }
+      )
+
+      if response_events.success?
+        @events = response_events['collection']
+        @events = @events.paginate(page: params[:page], per_page: 15)
+      else
+        flash[:error] = "Calendly error: unable to obtain events: #{response_events.code} - #{response_events.message}"
+        redirect_to root_path
+      end
+    else
+      flash[:error] = "Calendly error: unable to obtain scheduled events: #{response.code} - #{response.message}"
+      redirect_to root_path
+    end
+  end
 
   def events
     calendly_oauth = CalendlyOAuth.last
@@ -36,7 +65,7 @@ class CalendlyController < ApplicationController
     organization = calendly_oauth&.organization
 
     if access_token.nil? || organization.nil?
-      flash[:error] = "No se ha obtenido el token de acceso o la organización"
+      flash[:error] = "Calendly error: no access token or organization found"
       redirect_to root_path
     else
 
@@ -70,13 +99,8 @@ class CalendlyController < ApplicationController
             refresh_token: new_token['refresh_token']
           )
   
-          # Retry the request with the new access token
-          response = HTTParty.get(
-            'https://api.calendly.com/scheduled_events',
-            headers: {
-              'Authorization' => "Bearer #{new_token['access_token']}",
-              'Content-Type' => 'application/json'
-            },
+          response = HTTParty.get('https://api.calendly.com/scheduled_events',
+            headers: { 'Authorization' => "Bearer #{new_token['access_token']}", 'Content-Type' => 'application/json' },
             query: query_params
           )
   
@@ -84,19 +108,20 @@ class CalendlyController < ApplicationController
             @events = response.parsed_response['collection']
             @events = @events.paginate(page: params[:page], per_page: 15)
           else
-            flash[:error] = "Error al obtener los eventos programados de Calendly: #{response.code} - #{response.message}"
+            flash[:error] = "Calendly error: unable to obtain scheduled events: #{response.code} - #{response.message}"
             redirect_to root_path
           end
         else
-          flash[:error] = "No se ha podido renovar el token de acceso"
+          flash[:error] = "Calendly error: unable to renew access token"
           redirect_to root_path
         end
       else
-        flash[:error] = "Error al obtener los eventos programados de Calendly: #{response.code} - #{response.message}"
+        flash[:error] = "Calendly error: unable to obtain scheduled events: #{response.code} - #{response.message}"
         redirect_to root_path
       end
     end
   end
+
   private
 
   def get_access_token(authorization_code)
