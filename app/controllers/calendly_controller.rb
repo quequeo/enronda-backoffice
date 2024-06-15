@@ -33,7 +33,7 @@ class CalendlyController < ApplicationController
   def index
     @professional = Professional.find(params[:professional_id])
 
-    start_date = params[:start_date].presence || (Time.now - 1.month).strftime('%Y-%m-%d')
+    start_date = params[:start_date].presence || "2023-10-01"
     end_date = params[:end_date] || Time.now.strftime('%Y-%m-%d')
 
     response_me = HTTParty.get('https://api.calendly.com/users/me',
