@@ -19,13 +19,14 @@
       <div class="text-2xl font-bold text-white">
         Enronda
       </div>
-      <div>
-      <%= link_to 'Home', root_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
-      <%= link_to 'Enronda Sessions', calendly_events_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
-      <%= link_to 'List of Professionals', professionals_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
-      <%= link_to "All Professional's Events", calendly_all_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
-      </div>
-      <div>
+      <% if user_signed_in? %>
+        <div>
+          <%= link_to 'Home', root_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
+          <%= link_to 'Enronda Sessions', calendly_events_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
+          <%= link_to 'List of Professionals', professionals_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
+          <%= link_to "All Professional's Events", calendly_all_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
+        </div>
+      <% end %>
         
       <div>
         <% if user_signed_in? %>
