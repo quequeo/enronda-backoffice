@@ -30,46 +30,50 @@ class CalendlyController < ApplicationController
   end
   
   def all
-    @events = []
-    @professionals = Professional.all
-    @professionals.each do |professional|
-      next unless professional.token
-  
-      response_me = HTTParty.get('https://api.calendly.com/users/me',
-        headers: { 'Authorization' => "Bearer #{token = professional.token}", 'Content-Type' => 'application/json' }
-      )
-
-      query_params = {
-        organization: response_me['resource']['current_organization'],
-        count: 50,
-        min_start_time: (Time.now - 30.days).iso8601
-      }
-
-      if response_me.success?
-        response_events = HTTParty.get('https://api.calendly.com/scheduled_events',
-          headers: { 'Authorization' => "Bearer #{professional.token}", 'Content-Type' => 'application/json' },
-          query: query_params
+    # List of all scheduled events for all professionals
+    cache_key = 'all_professional_events'
+    @events = Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
+      @events = []
+      Professional.all.each do |professional|
+        next unless professional.token
+    
+        response_me = HTTParty.get('https://api.calendly.com/users/me',
+          headers: { 'Authorization' => "Bearer #{token = professional.token}", 'Content-Type' => 'application/json' }
         )
 
-        if response_events.success?
-          events_collection = response_events.parsed_response['collection']
-          @events << events_collection
+        query_params = {
+          organization: response_me['resource']['current_organization'],
+          count: 50,
+          min_start_time: (Time.now - 30.days).iso8601
+        }
+
+        if response_me.success?
+          response_events = HTTParty.get('https://api.calendly.com/scheduled_events',
+            headers: { 'Authorization' => "Bearer #{professional.token}", 'Content-Type' => 'application/json' },
+            query: query_params
+          )
+
+          if response_events.success?
+            events_collection = response_events.parsed_response['collection']
+            @events << events_collection
+          else
+            @events << "Calendly error: unable to obtain scheduled events from #{professional.name}"
+          end
+
         else
           @events << "Calendly error: unable to obtain scheduled events from #{professional.name}"
         end
-
-      else
-        @events << "Calendly error: unable to obtain scheduled events from #{professional.name}"
       end
-    end
 
-    @events = @events.flatten
+      @events = @events.flatten
+    end
   end
 
   def index
+    # Enronda list of scheduled events
     @professional = Professional.find(params[:professional_id])
 
-    start_date = params[:start_date].presence || "2023-10-01"
+    start_date = params[:start_date].presence || "2023-06-01"
     end_date = params[:end_date] || Time.now.strftime('%Y-%m-%d')
 
     response_me = HTTParty.get('https://api.calendly.com/users/me',

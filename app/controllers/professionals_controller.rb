@@ -1,6 +1,8 @@
 class ProfessionalsController < ApplicationController
     def index
-      @professionals = Professional.all
+      @professionals = Rails.cache.fetch('all_professionals', expires_in: 24.hours) do
+        Professional.all
+      end
     end
   
     def new
