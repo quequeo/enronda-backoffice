@@ -41,7 +41,7 @@ class CalendlyController < ApplicationController
 
       query_params = {
         organization: response_me['resource']['current_organization'],
-        count: 10,
+        count: 50,
         min_start_time: (Time.now - 30.days).iso8601
       }
 
@@ -52,7 +52,8 @@ class CalendlyController < ApplicationController
         )
 
         if response_events.success?
-          @events << response_events['collection']
+          events_collection = response_events.parsed_response['collection']
+          @events << events_collection
         else
           @events << "Calendly error: unable to obtain scheduled events from #{professional.name}"
         end
@@ -82,7 +83,7 @@ class CalendlyController < ApplicationController
       )
 
       if response_events.success?
-        @events = response_events['collection']
+        @events = response_events.parsed_response['collection']
         @events = @events.paginate(page: params[:page], per_page: 15)
       else
         flash[:error] = "Calendly error: unable to obtain events: #{response_events.code} - #{response_events.message}"
