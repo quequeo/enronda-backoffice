@@ -29,6 +29,41 @@ class CalendlyController < ApplicationController
     end
   end
   
+  def all
+    @events = []
+    @professionals = Professional.all
+    @professionals.each do |professional|
+      next unless professional.token
+  
+      response_me = HTTParty.get('https://api.calendly.com/users/me',
+        headers: { 'Authorization' => "Bearer #{token = professional.token}", 'Content-Type' => 'application/json' }
+      )
+
+      query_params = {
+        organization: response_me['resource']['current_organization'],
+        count: 10,
+        min_start_time: (Time.now - 30.days).iso8601
+      }
+
+      if response_me.success?
+        response_events = HTTParty.get('https://api.calendly.com/scheduled_events',
+          headers: { 'Authorization' => "Bearer #{professional.token}", 'Content-Type' => 'application/json' },
+          query: query_params
+        )
+
+        if response_events.success?
+          @events << response_events['collection']
+        else
+          @events << "Calendly error: unable to obtain scheduled events from #{professional.name}"
+        end
+
+      else
+        @events << "Calendly error: unable to obtain scheduled events from #{professional.name}"
+      end
+    end
+
+    @events = @events.flatten
+  end
 
   def index
     @professional = Professional.find(params[:professional_id])

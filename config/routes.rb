@@ -21,4 +21,5 @@ Rails.application.routes.draw do
   end
   
   get '/calendly', to: 'calendly#index'
+  get '/calendly/all', to: 'calendly#all'
 end
