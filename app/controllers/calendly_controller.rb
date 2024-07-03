@@ -4,7 +4,6 @@ class CalendlyController < ApplicationController
   require 'will_paginate/array'
   require 'csv'
 
-  before_action :set_professional, only: [:index]
   before_action :set_calendly_oauth, only: [:events]
 
   def auth
@@ -22,8 +21,6 @@ class CalendlyController < ApplicationController
   end
   
   def all
-    puts "all_professional_events"
-    sleep(3)
     @events = gather_events
   end
 
@@ -35,19 +32,23 @@ class CalendlyController < ApplicationController
     end
   end
 
-  def index
-    fetch_professional_events
-  end
-
   def events
     if @calendly_oauth&.access_token && @calendly_oauth&.organization
-      puts "fetch organization events"
-      sleep(3)
-      fetch_organization_events
+      query_params = build_query_params
+
+      response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
+  
+      if response.success?
+        @events = paginate_events(response.parsed_response['collection'])
+      elsif response.code == 401
+        handle_expired_token
+      else
+        handle_calendly_error(response)
+      end
     else
       handle_missing_oauth_data
     end
-    puts "events.present? #{@events.present?}"
+
     @events = @events || []
   end
 
@@ -58,7 +59,7 @@ class CalendlyController < ApplicationController
   end
 
   def set_calendly_oauth
-    @calendly_oauth = CalendlyOAuth.last
+    @calendly_oauth ||= CalendlyOAuth.last
   end
 
   def handle_successful_callback
@@ -78,15 +79,13 @@ class CalendlyController < ApplicationController
     redirect_to root_path
   end
 
-  def gather_events
-    Rails.cache.fetch('all_professional_events', expires_in: 20.minutes) do
-      events = []
-      Professional.all.each do |professional|
-        professional_events = fetch_professional_events(professional)
-        events.concat(professional_events) if professional_events.present?
-      end
-      events.flatten
+  def gather_events    
+    events = []
+    Professional.all.each do |professional|
+      professional_events = fetch_professional_events(professional)
+      events.concat(professional_events) if professional_events.present?
     end
+    events.flatten
   end
 
   def generate_csv_data
@@ -111,9 +110,7 @@ class CalendlyController < ApplicationController
   end
 
   def fetch_professional_events(professional)
-    Rails.cache.fetch("professional_events_#{professional.id}", expires_in: 20.minutes) do
-      fetch_events_for_single_professional(professional)
-    end
+    fetch_events_for_single_professional(professional)
   end
 
   def fetch_events_for_single_professional(professional)
@@ -131,22 +128,6 @@ class CalendlyController < ApplicationController
       response_events.parsed_response['collection']
     else
       [{ error: "Please validate token!", professional_name: professional.name }]
-    end
-  end
-
-  def fetch_organization_events
-    query_params = build_query_params
-
-    Rails.cache.fetch('organization_events', expires_in: 20.minutes) do
-      response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
-
-      if response.success?
-        paginate_events(response.parsed_response['collection'])
-      elsif response.code == 401
-        handle_expired_token
-      else
-        handle_calendly_error(response)
-      end
     end
   end
 
@@ -174,6 +155,32 @@ class CalendlyController < ApplicationController
 
     response = HTTParty.post('https://auth.calendly.com/oauth/token', headers: headers, body: body)
     response.parsed_response
+  end
+
+  def renew_access_token(refresh_token)
+    client_id = ENV['CALENDLY_CLIENT_ID']
+    client_secret = ENV['CALENDLY_CLIENT_SECRET']
+    redirect_uri = ENV['CALENDLY_REDIRECT_URI']
+  
+    response = HTTParty.post(
+      'https://auth.calendly.com/oauth/token',
+      headers: {
+        'Content-Type' => 'application/json'
+      },
+      body: {
+        grant_type: 'refresh_token',
+        refresh_token: refresh_token,
+        client_id: client_id,
+        client_secret: client_secret,
+        redirect_uri: redirect_uri
+      }.to_json
+    )
+  
+    if response.success?
+      response.parsed_response
+    else
+      nil
+    end
   end
 
   def fetch_events(professional, query_params)

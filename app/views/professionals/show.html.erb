@@ -1,0 +1,28 @@
+<h1 class="text-2xl font-bold mb-4"><%= @professional.name %></h1>
+
+<div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+  <div class="mb-4">
+    <p class="block text-gray-700 font-bold mb-2">Name:</p>
+    <p><%= @professional.name %></p>
+  </div>
+
+  <div class="mb-4">
+    <p class="block text-gray-700 font-bold mb-2">Token:</p>
+    <p><%= @professional.token.truncate(50) %></p>
+  </div>
+
+  <div class="mb-4">
+    <p class="block text-gray-700 font-bold mb-2">Phone:</p>
+    <p><%= @professional.phone %></p>
+  </div>
+
+  <div class="mb-4">
+    <p class="block text-gray-700 font-bold mb-2">Email:</p>
+    <p><%= @professional.email %></p>
+  </div>
+
+  <div class="flex items-center justify-between mt-4">
+    <%= link_to 'Edit', edit_professional_path(@professional), class: 'bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded inline-block focus:outline-none focus:shadow-outline' %>
+    <%= link_to 'Back to Professionals', professionals_path, class: 'text-purple-500 hover:text-purple-700 font-bold ml-4' %>
+  </div>
+</div>

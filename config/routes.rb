@@ -13,14 +13,12 @@ Rails.application.routes.draw do
   get 'calendly/callback', to: 'calendly#callback'
   post 'calendly/get_token', to: 'calendly#get_token'
   get 'calendly/events', to: 'calendly#events'
+  get '/calendly/all', to: 'calendly#all'
+  get '/calendly/all_csv', to: 'calendly#all_csv', defaults: { format: 'csv' }
 
   resources :professionals do
     member do
       delete :destroy, as: :delete
     end
   end
-  
-  get '/calendly', to: 'calendly#index'
-  get '/calendly/all', to: 'calendly#all'
-  get '/calendly/all_csv', to: 'calendly#all_csv', defaults: { format: 'csv' }
 end
