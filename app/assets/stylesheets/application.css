@@ -13,3 +13,14 @@
     background-color: #f2dede;
     color: #a94442;
   }
+
+  .logo-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+  
+  .logo-image {
+    width: 16rem;
+    height: 16rem;
+  }

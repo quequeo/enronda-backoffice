@@ -43,6 +43,7 @@ class CalendlyController < ApplicationController
     else
       handle_missing_oauth_data
     end
+    @events = @events || []
   end
 
   private
@@ -101,7 +102,9 @@ class CalendlyController < ApplicationController
   def fetch_organization_events
     query_params = build_query_params
 
-    response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
+    response = Rails.cache.fetch('organization_events', expires_in: 20.minutes) do
+      fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
+    end
 
     if response.success?
       @events = paginate_events(response.parsed_response['collection'])
@@ -210,7 +213,7 @@ class CalendlyController < ApplicationController
             event['name'],
             Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M"),
             Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M"),
-            event['status']
+            event['status'].capitalize
           ]
         end
       end
