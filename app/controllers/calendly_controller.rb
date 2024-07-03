@@ -39,6 +39,7 @@ class CalendlyController < ApplicationController
 
   def events
     if @calendly_oauth&.access_token && @calendly_oauth&.organization
+      puts "fetch organization events"
       fetch_organization_events
     else
       handle_missing_oauth_data
