@@ -7,33 +7,29 @@
   <%= csp_meta_tag %>
 
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
-  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-  <%= javascript_importmap_tags %>
+  <%= stylesheet_link_tag "tailwind", "inter-font" %>
+  <%= stylesheet_link_tag "application" %>
   <%= favicon_link_tag 'favicon.ico' %>
 </head>
 
 <body class="bg-gray-100">
-  <header class="bg-purple-600 text-white py-4">
-    <div class="container mx-auto flex justify-between items-center">
-      <div class="text-2xl font-bold text-white">
-        Enronda
-      </div>
-      <% if user_signed_in? %>
-        <div>
-          <%= link_to 'Home', root_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
-          <%= link_to 'Enronda Sessions', calendly_events_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
-          <%= link_to 'List of Professionals', professionals_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
-          <%= link_to "All Professional's Events", calendly_all_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md' %>
+  <header class="bg-gradient-to-r from-purple-600 to-purple-800 text-white shadow-md">
+    <div class="container mx-auto px-4 py-3 sm:py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
+          <%= link_to root_path, class: "flex items-center" do %>
+            <span class="text-2xl font-bold text-white">Enronda</span>
+          <% end %>
         </div>
-      <% end %>
         
-      <div>
-        <% if user_signed_in? %>
-          <%= link_to 'Logout', destroy_user_session_path, method: :delete, class: "bg-purple-700 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded" %>
-        <% else %>
-          <%= link_to 'Login', new_user_session_path, class: "bg-purple-700 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded" %>
-        <% end %>
+        <nav class="flex items-center space-x-4">
+          <% if user_signed_in? %>
+            <%= link_to 'Home', root_path, class: 'text-white hover:text-purple-200 transition duration-150 ease-in-out' %>
+            <%= button_to 'Logout', destroy_user_session_path, method: :delete, class: "bg-purple-500 hover:bg-purple-400 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105" %>
+          <% else %>
+            <%= link_to 'Login', new_user_session_path, class: "bg-white text-purple-600 hover:bg-purple-100 font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105" %>
+          <% end %>
+        </nav>
       </div>
     </div>
   </header>
@@ -51,6 +47,5 @@
     <%= render 'layouts/footer' %>
   </footer>
 
-  <%= javascript_include_tag "application", crossorigin: "anonymous", "data-turbo-track": "reload" %>
 </body>
 </html>

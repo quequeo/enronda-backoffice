@@ -1,0 +1,8 @@
+<% if user_signed_in? %>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4">
+    <%= link_to 'Enronda Sessions', calendly_events_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105' %>
+    <%= link_to 'List of Professionals', professionals_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105' %>
+    <%= link_to "Professional's Events", calendly_all_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105' %>
+    <%= link_to "Download Professional's Events", calendly_all_csv_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105' %>
+  </div>
+<% end %>

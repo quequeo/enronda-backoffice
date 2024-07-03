@@ -22,4 +22,5 @@ Rails.application.routes.draw do
   
   get '/calendly', to: 'calendly#index'
   get '/calendly/all', to: 'calendly#all'
+  get '/calendly/all_csv', to: 'calendly#all_csv', defaults: { format: 'csv' }
 end
