@@ -22,7 +22,7 @@ class CalendlyController < ApplicationController
   end
   
   def all
-    @events = fetch_cached_events
+    @events = gather_events
   end
 
   def all_csv
@@ -73,45 +73,75 @@ class CalendlyController < ApplicationController
     redirect_to root_path
   end
 
-  def fetch_cached_events
+  def gather_events
     Rails.cache.fetch('all_professional_events', expires_in: 20.minutes) do
-      gather_events
+      events = []
+      Professional.all.each do |professional|
+        professional_events = fetch_professional_events(professional)
+        events.concat(professional_events) if professional_events.present?
+      end
+      events.flatten
     end
   end
 
   def generate_csv_data
-    events = fetch_cached_events
-    Rails.cache.fetch('all_professional_events_csv', expires_in: 20.minutes) do
-      generate_csv(events)
+    events = gather_events
+    CSV.generate do |csv|
+      csv << ['Professional Name', 'Event Name', 'Start Time', 'End Time', 'Status']
+      
+      events.each do |event|
+        if event.is_a?(Hash) && event[:error]
+          csv << [event[:professional_name], event[:error], '', '', '']
+        else
+          csv << [
+            event['event_memberships'][0]['user_name'],
+            event['name'],
+            Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M"),
+            Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M"),
+            event['status'].capitalize
+          ]
+        end
+      end
     end
   end
 
-  def fetch_professional_events
-    start_date = params[:start_date].presence || "2023-06-01"
-    end_date = params[:end_date] || Time.now.strftime('%Y-%m-%d')
+  def fetch_professional_events(professional)
+    Rails.cache.fetch("professional_events_#{professional.id}", expires_in: 20.minutes) do
+      fetch_events_for_single_professional(professional)
+    end
+  end
 
-    response_me = fetch_user_info(@professional)
+  def fetch_events_for_single_professional(professional)
+    return [] unless professional.token && professional.organization
 
-    if response_me.success?
-      fetch_events_for_professional(response_me, start_date, end_date)
+    query_params = { 
+      count: 50, 
+      min_start_time: (Time.now - 30.days).iso8601,
+      organization: professional.organization
+    }
+
+    response_events = fetch_events(professional, query_params)
+    
+    if response_events.success?
+      response_events.parsed_response['collection']
     else
-      handle_calendly_error(response_me)
+      [{ error: "Please validate token!", professional_name: professional.name }]
     end
   end
 
   def fetch_organization_events
     query_params = build_query_params
 
-    response = Rails.cache.fetch('organization_events', expires_in: 20.minutes) do
-      fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
-    end
+    Rails.cache.fetch('organization_events', expires_in: 20.minutes) do
+      response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
 
-    if response.success?
-      @events = paginate_events(response.parsed_response['collection'])
-    elsif response.code == 401
-      handle_expired_token
-    else
-      handle_calendly_error(response)
+      if response.success?
+        paginate_events(response.parsed_response['collection'])
+      elsif response.code == 401
+        handle_expired_token
+      else
+        handle_calendly_error(response)
+      end
     end
   end
 
@@ -141,127 +171,11 @@ class CalendlyController < ApplicationController
     response.parsed_response
   end
 
-  def renew_access_token(refresh_token)
-    client_id = ENV['CALENDLY_CLIENT_ID']
-    client_secret = ENV['CALENDLY_CLIENT_SECRET']
-    redirect_uri = ENV['CALENDLY_REDIRECT_URI']
-  
-    response = HTTParty.post(
-      'https://auth.calendly.com/oauth/token',
-      headers: {
-        'Content-Type' => 'application/json'
-      },
-      body: {
-        grant_type: 'refresh_token',
-        refresh_token: refresh_token,
-        client_id: client_id,
-        client_secret: client_secret,
-        redirect_uri: redirect_uri
-      }.to_json
-    )
-  
-    if response.success?
-      response.parsed_response
-    else
-      nil
-    end
-  end
-
-  def gather_events
-    events = []
-    Professional.all.each do |professional|
-      professional_events = fetch_professional_events(professional)
-      events.concat(professional_events) if professional_events.present?
-    end
-    events.flatten
-  end
-
-  def fetch_professional_events(professional)
-    Rails.cache.fetch("professional_events_#{professional.id}", expires_in: 20.minutes) do
-      fetch_events_for_single_professional(professional)
-    end
-  end
-
-  def fetch_events_for_single_professional(professional)
-    return [] unless professional.token && professional.organization
-
-    query_params = { 
-      count: 50, 
-      min_start_time: (Time.now - 30.days).iso8601,
-      organization: professional.organization
-    }
-
-    response_events = fetch_events(professional, query_params)
-    
-    if response_events.success?
-      response_events.parsed_response['collection']
-    else
-      [{ error: "Please validate token!", professional_name: professional.name }]
-    end
-  end
-
-  def generate_csv(events)
-    CSV.generate do |csv|
-      csv << ['Professional Name', 'Event Name', 'Start Time', 'End Time', 'Status']
-      
-      events.each do |event|
-        if event.is_a?(Hash) && event[:error]
-          csv << [event[:professional_name], event[:error], '', '', '']
-        else
-          csv << [
-            event['event_memberships'][0]['user_name'],
-            event['name'],
-            Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M"),
-            Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M"),
-            event['status'].capitalize
-          ]
-        end
-      end
-    end
-  end
-
-  def fetch_user_info(professional)
-    HTTParty.get('https://api.calendly.com/users/me',
-      headers: { 'Authorization' => "Bearer #{professional.token}", 'Content-Type' => 'application/json' }
-    )
-  end
-  
-  def handle_user_response(response, professional, events)
-    if response.success?
-      professional.update(organization: response['resource']['current_organization'])
-      true
-    else
-      events << [{ error: "Please validate token!", professional_name: professional.name }]
-      false
-    end
-  end
-  
   def fetch_events(professional, query_params)
     HTTParty.get('https://api.calendly.com/scheduled_events',
       headers: { 'Authorization' => "Bearer #{professional.token}", 'Content-Type' => 'application/json' },
       query: query_params.merge(organization: professional.organization)
     )
-  end
-  
-  def handle_events_response(response, professional, events)
-    if response.success?
-      events << response.parsed_response['collection']
-    else
-      events << [{ error: "Please validate token!", professional_name: professional.name }]
-    end
-  end
-
-  def fetch_events_for_professional(response_me, start_date, end_date)
-    response_events = HTTParty.get('https://api.calendly.com/scheduled_events',
-      headers: { 'Authorization' => "Bearer #{@professional.token}", 'Content-Type' => 'application/json' },
-      query: { organization: response_me['resource']['current_organization'], min_start_time: start_date, max_start_time: end_date }
-    )
-
-    if response_events.success?
-      @events = paginate_events(response_events.parsed_response['collection'])
-    else
-      handle_calendly_error(response_events)
-    end
   end
 
   def build_query_params
