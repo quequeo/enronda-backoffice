@@ -35,21 +35,18 @@ class CalendlyController < ApplicationController
   def events
     if @calendly_oauth&.access_token && @calendly_oauth&.organization
       query_params = build_query_params
-
       response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
   
       if response.success?
         @events = paginate_events(response.parsed_response['collection'])
       elsif response.code == 401
-        handle_expired_token
+        handle_token_refresh(query_params)
       else
         handle_calendly_error(response)
       end
     else
       handle_missing_oauth_data
     end
-
-    @events = @events || []
   end
 
   private
@@ -77,6 +74,24 @@ class CalendlyController < ApplicationController
   def handle_failed_callback
     flash[:error] = "Authorization failed"
     redirect_to root_path
+  end
+
+  def handle_token_refresh(query_params)
+    new_token = renew_access_token(@calendly_oauth.refresh_token)
+  
+    if new_token
+      update_oauth_tokens(new_token)
+      response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
+  
+      if response.success?
+        @events = paginate_events(response.parsed_response['collection'])
+      else
+        handle_calendly_error(response)
+      end
+    else
+      flash[:error] = "Calendly error: unable to renew access token"
+      redirect_to root_path
+    end
   end
 
   def gather_events    
@@ -107,6 +122,9 @@ class CalendlyController < ApplicationController
         end
       end
     end
+  end
+
+  def fetch_organization_events
   end
 
   def fetch_professional_events(professional)
