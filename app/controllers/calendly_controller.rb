@@ -22,6 +22,8 @@ class CalendlyController < ApplicationController
   end
   
   def all
+    puts "all_professional_events"
+    sleep(3)
     @events = gather_events
   end
 
@@ -40,10 +42,12 @@ class CalendlyController < ApplicationController
   def events
     if @calendly_oauth&.access_token && @calendly_oauth&.organization
       puts "fetch organization events"
+      sleep(3)
       fetch_organization_events
     else
       handle_missing_oauth_data
     end
+    puts "events.present? #{@events.present?}"
     @events = @events || []
   end
 
