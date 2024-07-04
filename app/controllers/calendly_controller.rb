@@ -7,9 +7,7 @@ class CalendlyController < ApplicationController
   before_action :set_calendly_oauth, only: [:events]
 
   def auth
-    @client_id = ENV['CALENDLY_CLIENT_ID']
-    @redirect_uri = ENV['CALENDLY_REDIRECT_URI']
-    @connect_to_calendly_url = "https://auth.calendly.com/oauth/authorize?client_id=#{@client_id}&response_type=code&redirect_uri=#{@redirect_uri}"
+    @connect_to_calendly_url = CalendlyService.auth
   end
 
   def callback
@@ -78,7 +76,7 @@ end
       response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
   
       if response.success?
-        @events = paginate_events(response.parsed_response['collection'])
+        @events = response.parsed_response['collection'].paginate(page: params[:page], per_page: 15)
       else
         flash[:error] = "Calendly error: unable to obtain events: #{response.code} - #{response.message}"
         redirect_to root_path
