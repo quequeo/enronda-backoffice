@@ -1,2 +1,9 @@
-<h1>Calendly Authentication Process</h1>
-<%= link_to 'Click here to connect with Calendly', "#{@connect_to_calendly_url}", target: '_blank', class: 'btn btn-primary' %>
+<div class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-10">
+  <div class="py-4 px-6">
+    <h1 class="text-2xl font-bold text-gray-800">Calendly Authentication Process</h1>
+    <p class="mt-2 text-gray-600">To connect your account with Calendly, please click the button below:</p>
+    <div class="mt-4">
+      <%= link_to 'Connect with Calendly', @connect_to_calendly_url, target: '_blank', class: 'w-full flex items-center justify-center bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2' %>
+    </div>
+  </div>
+</div>

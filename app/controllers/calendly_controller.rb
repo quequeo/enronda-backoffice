@@ -7,56 +7,62 @@ class CalendlyController < ApplicationController
   before_action :set_calendly_oauth, only: [:events]
 
   def auth
-    @connect_to_calendly_url = CalendlyService.auth
+    @connect_to_calendly_url = CalendlyService.authorize_url
   end
 
   def callback
-    if params[:code]
-      response = get_access_token(params[:code])
-      owner = response['owner'].split('/').last
-      organization = response['organization'].split('/').last
-  
-      calendly_oauth = CalendlyOAuth.find_or_create_by(owner: owner, organization: organization)
-      calendly_oauth.update(access_token: response['access_token'], refresh_token: response['refresh_token'])
-  
-      flash[:notice] = "Access Token received"
-      render :token
-    else
-      flash[:error] = "Authorization failed"
-      redirect_to root_path
-    end
+    CalendlyService.callback(params)
+    redirect_to root_path
   end
   
   def all
-    @events = gather_events
+    filter_params = params.permit!.slice(:status, :start_date, :end_date)
+    cache_key = "all_professional_events_#{filter_params.to_param}"
+
+    unless Rails.env.production?
+      @events = Rails.cache.read(cache_key) 
+      @events = nil if params[:refresh] # force cache refresh
+    end
+
+    @events = CalendlyService.gather_events(filter_params) if @events.nil?
+
+    unless Rails.env.production? && @events.present?
+      Rails.cache.write(cache_key, @events, expires_in: 4.hour)
+    end
+
+    @events
   end
 
   def all_csv
+    filter_params = params.permit!.slice(:status, :start_date, :end_date)
+
+    events = CalendlyService.gather_events(filter_params)
+
     respond_to do |format|
       format.csv do
-        send_data generate_csv_data, filename: "all_professional_events_#{Date.today}.csv"
+        send_data generate_csv_data(events), filename: "professional_events_#{Date.today}.csv"
       end
     end
   end
 
-def events
-  if @calendly_oauth&.access_token && @calendly_oauth&.organization
-    query_params = build_query_params
-    response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
+  def events
+    if @calendly_oauth&.access_token && @calendly_oauth&.organization
+      query_params = build_query_params
+      response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
 
-    if response.success?
-        @events = response.parsed_response['collection'].paginate(page: params[:page], per_page: 15)
-    elsif response.code == 401
-      handle_token_refresh(query_params)
+      if response.success?
+          @events = response.parsed_response['collection'].paginate(page: params[:page], per_page: 15)
+      elsif response.code == 401
+        handle_token_refresh(query_params)
+      else
+        flash[:error] = "Calendly error: unable to obtain events: #{response.code} - #{response.message}"
+        redirect_to root_path
+      end
     else
-      flash[:error] = "Calendly error: unable to obtain events: #{response.code} - #{response.message}"
+      flash[:error] = "Calendly error: no access token or organization found"
       redirect_to root_path
     end
-  else
-    flash[:error] = "Calendly error: no access token or organization found"
-    redirect_to root_path
   end
-end
 
   private
 
@@ -87,63 +93,19 @@ end
     end
   end
 
-  def gather_events    
-    events = []
-    Professional.all.each do |professional|
-      if professional.token.nil?
-        @events << [{ error: "Please validate token!", professional_name: professional.name }]
-        next
-      end
-
-      if professional.organization.nil?
-        response_me = HTTParty.get('https://api.calendly.com/users/me',
-          headers: { 'Authorization' => "Bearer #{professional.token}", 'Content-Type' => 'application/json' },
-        )
-        
-        if response_me.success?
-          organization = response_me.parsed_response['resource']['current_organization']
-          professional.update(organization: organization)
-        else
-          events << [{ error: "Please validate token!", professional_name: professional.name }]
-          next
-        end
-      end
-
-      query_params = { 
-        count: 50, 
-        min_start_time: (Time.now - 30.days).iso8601,
-        organization: professional.organization
-      }
-
-      response_events = HTTParty.get('https://api.calendly.com/scheduled_events',
-        headers: { 'Authorization' => "Bearer #{professional.token}", 'Content-Type' => 'application/json' },
-        query: query_params.merge(organization: professional.organization)
-      )
-      
-      if response_events.success?
-        events << response_events.parsed_response['collection']
-      else
-        events << [{ error: "Please validate token!", professional_name: professional.name }]
-        next
-      end
-    end
-
-    events.flatten
-  end
-
-  def generate_csv_data
-    events = gather_events
+  def generate_csv_data(events)
     CSV.generate do |csv|
-      csv << ['Professional Name', 'Event Name', 'Start Time', 'End Time', 'Status']
+      csv << ['Professional Name', 'Event Name', 'Created At', 'Start Time', 'End Time', 'Status']
       
       events.each do |event|
         if event.is_a?(Hash) && event[:error]
-          csv << [event[:professional_name], event[:error], '', '', '']
+          csv << [event[:professional_name], event[:error], 'N/A', 'N/A', 'N/A']
         else
           csv << [
             event['event_memberships'][0]['user_name'],
             event['name'],
             Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M"),
+            Time.parse(event['start_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M"),
             Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M"),
             event['status'].capitalize
           ]

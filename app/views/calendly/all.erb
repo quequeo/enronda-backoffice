@@ -1,65 +1,56 @@
-
 <h1 class="text-2xl font-bold mb-6">Professionals' Events</h1>
+
+<div class="flex flex-wrap items-end space-x-2 mb-4">
+  <%= form_tag(calendly_all_path, method: :get, class: 'flex items-end space-x-2') do %>
+    <div class="flex-grow md:flex-grow-0 mb-2 md:mb-0">
+      <%= label_tag :status, "Status", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= select_tag :status, options_for_select([['All', ''], ['Active', 'active'], ['Canceled', 'canceled']], params[:status]), class: 'form-select w-full md:w-40 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50' %>
+    </div>
+    <div class="flex-grow md:flex-grow-0 mb-2 md:mb-0">
+      <%= label_tag :start_date, "Start Date", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= date_field_tag :start_date, params[:start_date], class: 'form-input w-full md:w-40 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50' %>
+    </div>
+    <div class="flex-grow md:flex-grow-0 mb-2 md:mb-0">
+      <%= label_tag :end_date, "End Date", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= date_field_tag :end_date, params[:end_date], class: 'form-input w-full md:w-40 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50' %>
+    </div>
+    <div class="flex items-center space-x-2">
+      <%= submit_tag 'Apply Filters', class: 'bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded mb-2 md:mb-0' %>
+      <%= link_to 'Clear Filters', calendly_all_path, class: 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mb-2 md:mb-0' %>
+      <%= submit_tag 'Download Events', formaction: calendly_all_csv_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105 mb-2 md:mb-0' %>
+    </div>
+  <% end %>
+</div>
+
 
 <% if @events.nil? %>
   <p class="text-purple-600">No events found</p>
 <% else %>
-  <div class="overflow-x-auto">
+  <div class="overflow-x-auto mt-4">
     <table class="min-w-full bg-white border border-purple-400">
       <thead>
         <tr>
           <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">User Name</th>
           <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Event Name</th>
           <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Created At</th>
+          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Start Time</th>
           <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">End Time</th>
           <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Status</th>
-
         </tr>
       </thead>
       <tbody>
         <% @events.each do |event| %>
           <tr class="hover:bg-purple-200">
-
             <% if event[:error].present? %>
-              <!-- unable to obtain events -->
               <td class="py-2 px-2 border-b border-purple-200"><%= event[:professional_name] %></td>
-              <td class="py-2 px-2 border-b border-purple-200"><%= event[:error] %></td>
-              <td class="py-2 px-2 border-b border-purple-200">N/A</td>
-              <td class="py-2 px-2 border-b border-purple-200">N/A</td>
-              <td class="py-2 px-2 border-b border-purple-200">N/A</td>
-
+              <td class="py-2 px-2 border-b border-purple-200" colspan="5"><%= event[:error] %></td>
             <% else %>
-
-              <% if event['event_memberships'].present? %>
-                <td class="py-2 px-2 border-b border-purple-200"><%= event['event_memberships'][0]['user_name'] %></td>
-              <% else %>
-                <td class="py-2 px-2 border-b border-purple-200">No user</td>
-              <% end %>
-              
-              <% if event['name'].present? %>
-                <td class="py-2 px-4 border-b border-purple-200"><%= event['name'] %></td>
-              <% else %>
-                <td class="py-2 px-4 border-b border-purple-200">No event name</td>
-              <% end %>
-
-              <% if event['created_at'].present? %>
-                <td class="py-2 px-2 border-b border-purple-200"><%= Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") %></td>
-              <% else %>
-                <td class="py-2 px-2 border-b border-purple-200">No created at</td>
-              <% end %>
-
-              <% if event['end_time'].present? %>
-                <td class="py-2 px-2 border-b border-purple-200"><%= Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") %></td>
-              <% else %>
-                <td class="py-2 px-2 border-b border-purple-200">No end time</td>
-              <% end %>
-
-              <% if event['status'].present? %>
-                <td class="py-2 px-2 border-b border-purple-200"><%= event['status'].capitalize %></td>
-              <% else %>
-                <td class="py-2 px-2 border-b border-purple-200">No status</td>
-              <% end %>
-
+              <td class="py-2 px-2 border-b border-purple-200"><%= event['event_memberships'].present? ? event['event_memberships'][0]['user_name'] : 'No user' %></td>
+              <td class="py-2 px-4 border-b border-purple-200"><%= event['name'].present? ? event['name'] : 'No event name' %></td>
+              <td class="py-2 px-2 border-b border-purple-200"><%= event['created_at'].present? ? Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") : 'No created at' %></td>
+              <td class="py-2 px-2 border-b border-purple-200"><%= event['start_time'].present? ? Time.parse(event['start_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") : 'No start time' %></td>
+              <td class="py-2 px-2 border-b border-purple-200"><%= event['end_time'].present? ? Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") : 'No end time' %></td>
+              <td class="py-2 px-2 border-b border-purple-200"><%= event['status'].present? ? event['status'].capitalize : 'No status' %></td>
             <% end %>
           </tr>
         <% end %>
