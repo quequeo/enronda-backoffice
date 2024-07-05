@@ -99,7 +99,7 @@ class CalendlyController < ApplicationController
       
       events.each do |event|
         if event.is_a?(Hash) && event[:error]
-          csv << [event[:professional_name], event[:error], 'N/A', 'N/A', 'N/A']
+          csv << [event[:professional_name], event[:error], 'N/A', 'N/A', 'N/A', 'N/A']
         else
           csv << [
             event['event_memberships'][0]['user_name'],
