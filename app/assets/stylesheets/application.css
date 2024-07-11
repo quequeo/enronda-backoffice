@@ -1,26 +1,28 @@
 .flash {
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-  }
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
   
-  .flash.notice {
-    background-color: #e7f3fe;
-    color: #31708f;
-  }
-  
-  .flash.alert, .flash.error {
-    background-color: #f2dede;
-    color: #a94442;
-  }
+.flash.notice {
+  background-color: #e7f3fe;
+  color: #31708f;
+}
 
-  .logo-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 2rem;
-  }
+.flash.alert, .flash.error {
+  background-color: #f2dede;
+  color: #a94442;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
   
-  .logo-image {
-    width: 16rem;
-    height: 16rem;
-  }
+.logo-image {
+  width: 16rem;
+  height: 16rem;
+}
+
+  

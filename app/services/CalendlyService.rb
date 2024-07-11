@@ -31,7 +31,7 @@ class CalendlyService
       Professional.all.each do |professional|
 
         if professional.token.nil?
-          events << [{ error: "Please validate token!", professional_name: professional.name }]
+          events << [{ error: "Error: missing token!", professional_name: professional.name }]
           next
         end
 
@@ -44,12 +44,12 @@ class CalendlyService
             organization = response_me.parsed_response['resource']['current_organization']
             professional.update(organization: organization)
           else
-            events << [{ error: "Please validate token!", professional_name: professional.name }]
+            events << [{ error: "Please, validate token!", professional_name: professional.name }]
             next
           end
         end
 
-        query_params = { organization: professional.organization }
+        query_params = { organization: professional.organization, count: 100 }
         query_params.merge!(status: status) if status.present?
         query_params.merge!(min_start_time: start_date.iso8601)
         query_params.merge!(max_start_time: end_date.iso8601) if end_date.present?
