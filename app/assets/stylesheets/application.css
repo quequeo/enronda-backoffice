@@ -25,4 +25,7 @@
   height: 16rem;
 }
 
+.hidden {
+  display: none;
+}
   

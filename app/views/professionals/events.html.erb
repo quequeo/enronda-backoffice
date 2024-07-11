@@ -1,7 +1,7 @@
-<h1 class="text-2xl font-bold mb-6">Professionals' Events</h1>
+<h1 class="text-2xl font-bold mb-6"><%= @professional.name %> Scheduled Events</h1>
 
 <div class="flex flex-wrap items-end space-x-2 mb-4">
-  <%= form_tag(calendly_all_path, method: :get, class: 'flex items-end space-x-2', id: 'events-filter-form') do %>
+  <%= form_tag(events_professional_path, method: :get, class: 'flex items-end space-x-2') do %>
     <div class="flex-grow md:flex-grow-0 mb-2 md:mb-0">
       <%= label_tag :status, "Status", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= select_tag :status, options_for_select([['All', ''], ['Active', 'active'], ['Canceled', 'canceled']], params[:status]), class: 'form-select w-full md:w-40 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50' %>
@@ -16,23 +16,23 @@
     </div>
     <div class="flex items-center space-x-2">
       <%= submit_tag 'Apply Filters', class: 'bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded mb-2 md:mb-0' %>
-      <%= link_to 'Clear Filters', calendly_all_path, class: 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mb-2 md:mb-0' %>
+      <%= link_to 'Clear Filters', events_professional_path, class: 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mb-2 md:mb-0' %>
       <% if @events.nil? || @events == [] %>
-      <% else %>
-        <%= submit_tag 'Download Events', 
-          formaction: calendly_all_csv_path, 
-          class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105 mb-2 md:mb-0',
-          id: 'download-events-link'  
-        %>
+      <% else%>
+        <%= submit_tag 'Download Events', formaction: events_csv_professional_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105 mb-2 md:mb-0' %>
       <% end %>
     </div>
   <% end %>
 </div>
 
 
-<% if @events.nil? %>
+<% if @events.nil? || @events == [] %>
   <p class="text-purple-600">No events found</p>
 <% else %>
+  <div class="flex justify-center my-4">
+    Total: <%= @events_count %> events | 
+    <%= will_paginate @events, class: "pagination" %> |
+  </div>
   <div class="overflow-x-auto mt-4">
     <table class="min-w-full bg-white border border-purple-400">
       <thead>
@@ -63,51 +63,9 @@
         <% end %>
       </tbody>
     </table>
+    <div class="flex justify-center my-4">
+      Total: <%= @events_count %> events | 
+      <%= will_paginate @events, class: "pagination" %> |
+    </div>
   </div>
 <% end %>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('events-filter-form');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const downloadLink = document.getElementById('download-events-link');
-
-    function showLoading(minDuration = 1000) {
-      loadingOverlay.classList.remove('hidden');
-      const startTime = Date.now();
-
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const elapsedTime = Date.now() - startTime;
-          const remainingTime = Math.max(0, minDuration - elapsedTime);
-          setTimeout(resolve, remainingTime);
-        }, minDuration);
-      });
-    }
-
-    function hideLoading() {
-      loadingOverlay.classList.add('hidden');
-    }
-
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      showLoading().then(() => {
-        fetch(this.action + '?' + new URLSearchParams(new FormData(this)))
-          .then(response => response.text())
-          .then(html => {
-            document.body.innerHTML = html;
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          })
-          .finally(hideLoading);
-      });
-    });
-
-    if (downloadLink) {
-      downloadLink.addEventListener('click', function(e) {
-        showLoading(2000).then(hideLoading);  // Mostramos la animación por 2 segundos para descargas
-      });
-    }
-  });
-</script>

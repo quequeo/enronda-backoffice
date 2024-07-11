@@ -51,6 +51,7 @@ class CalendlyController < ApplicationController
       response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
 
       if response.success?
+          @events_count = response.parsed_response['collection'].count
           @events = response.parsed_response['collection'].paginate(page: params[:page], per_page: 15)
       elsif response.code == 401
         handle_token_refresh(query_params)

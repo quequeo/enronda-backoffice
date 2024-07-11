@@ -1,8 +1,12 @@
 <h1 class="text-3xl font-bold mb-6 text-center">Enronda Sessions</h1>
 
-<% if @events.empty? %>
+<% if @events.empty? || @events.nil? || @events == [] %>
   <p class="text-purple-600 text-center mt-4">No events found</p>
 <% else %>
+  <div class="flex justify-center my-4">
+    Total: <%= @events_count %> events | 
+    <%= will_paginate @events, class: "pagination" %> |
+  </div>
   <div class="overflow-x-auto mt-4">
     <table class="min-w-full bg-white border border-purple-400">
       <thead>
@@ -32,7 +36,8 @@
     </table>
     
     <div class="flex justify-center my-4">
-      <%= will_paginate @events, class: "pagination" %>
+      Total: <%= @events_count %> events | 
+      <%= will_paginate @events, class: "pagination" %> |
     </div>
   </div>
 <% end %>

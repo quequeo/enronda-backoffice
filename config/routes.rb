@@ -19,6 +19,8 @@ Rails.application.routes.draw do
   resources :professionals do
     member do
       delete :destroy, as: :delete
+      get :events
+      get :events_csv, defaults: { format: 'csv' }
     end
   end
 end
