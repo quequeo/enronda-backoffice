@@ -1,6 +1,6 @@
 class AuthorizedUser < ActiveRecord::Migration[7.0]
   def up
-    pwd = ENV['ENRONDA_USER_PWD']
+    pwd = '123456'
     User.create!(email: 'hola@enronda.com', password: pwd, password_confirmation: pwd)
   end
 
