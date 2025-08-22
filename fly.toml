@@ -1,13 +1,16 @@
-# fly.toml app configuration file generated for enronda-backoffice on 2024-08-14T10:15:10-03:00
+# fly.toml app configuration file generated for enronda-backoffice on 2025-04-09T13:38:27-03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'enronda-backoffice'
-primary_region = 'eze'
+primary_region = 'gru'
 console_command = '/rails/bin/rails console'
 
 [build]
+
+[deploy]
+  release_command = './bin/rails db:prepare'
 
 [http_service]
   internal_port = 3000
@@ -21,10 +24,7 @@ console_command = '/rails/bin/rails console'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
-[deploy]
-  release_command = "./bin/rails db:prepare"
 
 [[statics]]
-  guest_path = "/rails/public"
-  url_prefix = "/"
-
+  guest_path = '/rails/public'
+  url_prefix = '/'

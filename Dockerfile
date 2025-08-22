@@ -15,10 +15,8 @@ ENV BUNDLE_DEPLOYMENT="1" \
     BUNDLE_WITHOUT="development:test" \
     RAILS_ENV="production"
 
-# Update gems and bundler
-RUN gem update --system --no-document && \
-    gem install -N bundler
-
+# Bundler compatible con ruby 3.1 (do not udpdate ruby gems)
+RUN gem install -N bundler -v "~> 2.6"
 
 # Throw-away build stage to reduce size of final image
 FROM base as build
