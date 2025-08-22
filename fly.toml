@@ -4,7 +4,7 @@
 #
 
 app = 'enronda-backoffice'
-primary_region = 'gru'
+primary_region = 'eze'
 console_command = '/rails/bin/rails console'
 
 [build]
