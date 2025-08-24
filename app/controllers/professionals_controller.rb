@@ -1,5 +1,6 @@
 class ProfessionalsController < ApplicationController
   require 'will_paginate/array'
+  require 'csv'
 
   def index
     @professionals = Professional.all
@@ -25,7 +26,7 @@ class ProfessionalsController < ApplicationController
   def events
     filter_params = params.permit!.slice(:status, :start_date, :end_date)
     @professional = Professional.find(params[:id])
-    @events = CalendlyService.professional_events(@professional, filter_params)
+    @events = CalendlyService.professional_events(@professional, filter_params) || []
     @events_count = @events.count
     @events = @events.paginate(page: params[:page], per_page: 15)
     @events
@@ -61,7 +62,7 @@ class ProfessionalsController < ApplicationController
     @professional.destroy
     redirect_to professionals_path, notice: 'Professional was successfully destroyed.'
   rescue ActiveRecord::RecordNotFound
-    nil
+    redirect_to professionals_path, notice: 'Professional was successfully destroyed.'
   end
 
   private

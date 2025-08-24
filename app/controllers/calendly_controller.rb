@@ -1,5 +1,4 @@
 class CalendlyController < ApplicationController
-
   require 'base64'
   require 'will_paginate/array'
   require 'csv'
@@ -24,7 +23,12 @@ class CalendlyController < ApplicationController
       @events = nil if params[:refresh] # force cache refresh
     end
 
-    @events = CalendlyService.gather_events(filter_params) if @events.nil?
+    begin
+      @events = CalendlyService.gather_events(filter_params) if @events.nil?
+    rescue => e
+      Rails.logger.error "Error gathering events: #{e.message}"
+      @events = []
+    end
 
     unless Rails.env.production? && @events.present?
       Rails.cache.write(cache_key, @events, expires_in: 4.hour)
@@ -47,16 +51,23 @@ class CalendlyController < ApplicationController
 
   def events
     if @calendly_oauth&.access_token && @calendly_oauth&.organization
-      query_params = build_query_params
-      response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
+      begin
+        query_params = build_query_params
+        response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
 
-      if response.success?
-          @events_count = response.parsed_response['collection'].count
-          @events = response.parsed_response['collection'].paginate(page: params[:page], per_page: 15)
-      elsif response.code == 401
-        handle_token_refresh(query_params)
-      else
-        flash[:error] = "Calendly error: unable to obtain events: #{response.code} - #{response.message}"
+        if response&.success?
+          collection = response.parsed_response&.fetch('collection', [])
+          @events_count = collection.count
+          @events = collection.paginate(page: params[:page], per_page: 15)
+        elsif response&.code == 401
+          handle_token_refresh(query_params)
+        else
+          flash[:error] = "Calendly error: unable to obtain events: #{response&.code || 'Unknown'} - #{response&.message || 'Unknown error'}"
+          redirect_to root_path
+        end
+      rescue => e
+        Rails.logger.error "Error fetching events: #{e.message}"
+        flash[:error] = "Calendly error: unable to obtain events"
         redirect_to root_path
       end
     else
@@ -166,10 +177,9 @@ class CalendlyController < ApplicationController
     {
       organization: "https://api.calendly.com/organizations/#{@calendly_oauth.organization}",
       count: 100,
-      min_start_time: (Time.now - 90.days).iso8601,
-      status: params[:status],
-      min_start_time: params[:min_start_time],
-      max_start_time: params[:max_start_time]
+      min_start_time: params[:min_start_time] || (Time.now - 90.days).iso8601,
+      max_start_time: params[:max_start_time],
+      status: params[:status]
     }.compact
   end
 
