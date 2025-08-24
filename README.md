@@ -294,17 +294,62 @@ heroku rollback
 ```
 
 #### Verificación Post-Deploy
-```bash
-# Tests automáticos
-heroku run rails smoke_tests:all
-heroku run rails smoke_tests:user_flows
 
-# Verificación manual requerida:
-# ✅ Login con hola@enronda.com
-# ✅ CRUD de profesionales funciona
-# ✅ Eventos cargan (puede mostrar errores sin tokens)
-# ✅ CSV export funciona
-# ✅ Sin errores críticos en logs
+**📊 Comandos de Verificación (ejecutar en orden):**
+```bash
+# 1. Verificar que la aplicación carga
+heroku open
+
+# 2. Monitorear logs en tiempo real (dejar corriendo en terminal)
+heroku logs --tail
+
+# 3. Ejecutar smoke tests automáticos
+heroku run rails smoke_tests:all
+
+# 4. Verificar health check
+heroku run rails health:check
+
+# 5. Tests adicionales
+heroku run rails smoke_tests:user_flows
+heroku run rails smoke_tests:calendly_api  # Solo si hay tokens
+```
+
+**👤 Verificación Manual Crítica:**
+- ✅ **Login**: Acceder con `hola@enronda.com`
+- ✅ **CRUD Profesionales**: Crear/editar/eliminar professional
+- ✅ **Listado**: Ver lista de professionals funciona
+- ✅ **Eventos**: Cargar events (puede mostrar errores sin tokens - normal)
+- ✅ **Export**: Descargar CSV funciona
+- ✅ **Logs**: Sin errores críticos en `heroku logs --tail`
+
+**🚨 Si Algo Sale Mal - Rollback Inmediato:**
+```bash
+# Rollback rápido a versión anterior
+heroku rollback
+
+# Verificar que rollback funcionó
+heroku open
+heroku logs --tail
+
+# Ver historial de releases si necesitas versión específica
+heroku releases
+heroku rollback v41  # Ejemplo: rollback a release específico
+```
+
+**⏰ Timeline de Verificación Recomendado:**
+```bash
+# Inmediatamente después del deploy (0-2 min)
+heroku logs --tail              # Buscar errores inmediatos
+heroku open                     # Verificar que carga
+
+# Si hay errores críticos → heroku rollback INMEDIATAMENTE
+
+# Verificación completa (2-10 min) - Solo si no hay errores inmediatos
+heroku run rails smoke_tests:all    # Tests automáticos
+heroku run rails health:check       # Health status
+# + Testing manual básico
+
+# Si encuentras problemas → heroku rollback
 ```
 
 #### Archivos de Deployment
