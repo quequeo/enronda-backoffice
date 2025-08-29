@@ -29,9 +29,11 @@
 <% if @events.nil? || @events == [] %>
   <p class="text-purple-600">No events found</p>
 <% else %>
-  <div class="flex justify-center my-4">
-    Total: <%= @events_count %> events | 
-    <%= will_paginate @events, class: "pagination" %> |
+  <div class="flex justify-between items-center my-4">
+    <div class="text-gray-600">
+      Total: <%= @events_count %> events
+    </div>
+    <%= render 'shared/pagination', collection: @events %>
   </div>
   <div class="overflow-x-auto mt-4">
     <table class="min-w-full bg-white border border-purple-400">
@@ -57,15 +59,29 @@
               <td class="py-2 px-2 border-b border-purple-200"><%= event['created_at'].present? ? Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") : 'No created at' %></td>
               <td class="py-2 px-2 border-b border-purple-200"><%= event['start_time'].present? ? Time.parse(event['start_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") : 'No start time' %></td>
               <td class="py-2 px-2 border-b border-purple-200"><%= event['end_time'].present? ? Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") : 'No end time' %></td>
-              <td class="py-2 px-2 border-b border-purple-200"><%= event['status'].present? ? event['status'].capitalize : 'No status' %></td>
+              <td class="py-2 px-2 border-b border-purple-200">
+                <% if event['status'].present? %>
+                                     <span class="px-3 py-1 inline-flex text-sm leading-6 font-semibold rounded-full border
+                     <%= case event['status']
+                         when 'active'
+                           'bg-green-100 text-green-800 border-green-200' # rubocop:disable Style/StringLiterals
+                         when 'canceled'
+                           'bg-red-100 text-red-800 border-red-200' # rubocop:disable Style/StringLiterals
+                         else
+                           'bg-gray-100 text-gray-800 border-gray-200' # rubocop:disable Style/StringLiterals
+                         end %>">
+                    <%= event['status'].capitalize %>
+                  </span>
+                <% else %>
+                  <span class="px-3 py-1 inline-flex text-sm leading-6 font-semibold rounded-full bg-gray-100 text-gray-800 border border-gray-200">
+                    No status
+                  </span>
+                <% end %>
+              </td>
             <% end %>
           </tr>
         <% end %>
       </tbody>
     </table>
-    <div class="flex justify-center my-4">
-      Total: <%= @events_count %> events | 
-      <%= will_paginate @events, class: "pagination" %> |
-    </div>
   </div>
 <% end %>

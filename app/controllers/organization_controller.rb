@@ -12,17 +12,17 @@ class OrganizationController < ApplicationController
     
     if @calendly_oauth&.access_token && @calendly_oauth&.organization
       begin
-        Rails.logger.info "DEBUG: Building query params..."
         query_params = build_query_params
-        Rails.logger.info "DEBUG: Query params: #{query_params}"
-        Rails.logger.info "DEBUG: Fetching organization events..."
         response = fetch_organization_events(@calendly_oauth.access_token, query_params)
-        Rails.logger.info "DEBUG: Response success: #{response&.success?}"
-        Rails.logger.info "DEBUG: Response code: #{response&.code}"
-        Rails.logger.info "DEBUG: Response body keys: #{response&.parsed_response&.keys}"
 
         if response&.success?
           collection = response.parsed_response&.fetch('collection', [])
+          
+          # Filter by status if specified
+          if params[:status].present? && params[:status] != ''
+            collection = collection.select { |event| event['status'] == params[:status] }
+          end
+          
           # Sort events by start_time in descending order (most recent first)
           collection = collection.sort_by { |event| Time.parse(event['start_time']) }.reverse
           @events_count = collection.count
@@ -126,6 +126,12 @@ class OrganizationController < ApplicationController
 
         if response&.success?
           events = response.parsed_response&.fetch('collection', [])
+          
+          # Filter by status if specified
+          if params[:status].present? && params[:status] != ''
+            events = events.select { |event| event['status'] == params[:status] }
+          end
+          
           # Sort events by start_time in descending order (most recent first)
           events = events.sort_by { |event| Time.parse(event['start_time']) }.reverse
           
@@ -218,13 +224,24 @@ class OrganizationController < ApplicationController
   end
 
   def build_query_params
-    {
+    query_params = {
       organization: "https://api.calendly.com/organizations/#{@calendly_oauth.organization}",
-      count: 100,
-      min_start_time: params[:min_start_time] || (Time.now - 90.days).iso8601,
-      max_start_time: params[:max_start_time],
-      status: params[:status]
-    }.compact
+      count: 100
+    }
+    
+    # Add min_start_time if provided, otherwise use default (90 days ago)
+    if params[:min_start_time].present?
+      query_params[:min_start_time] = Date.parse(params[:min_start_time]).beginning_of_day.iso8601
+    else
+      query_params[:min_start_time] = (Time.now - 90.days).iso8601
+    end
+    
+    # Add max_start_time if provided
+    if params[:max_start_time].present?
+      query_params[:max_start_time] = Date.parse(params[:max_start_time]).end_of_day.iso8601
+    end
+    
+    query_params
   end
 
   def fetch_organization_events(access_token, query_params)

@@ -61,17 +61,6 @@
   });
 </script>
 
-<div class="mb-6">
-  <div class="flex justify-between items-center">
-    <div class="text-gray-600">
-      Total Events: <%= @events_count %>
-    </div>
-    <div class="flex space-x-2">
-      <%= link_to "Back to Home", root_path, class: 'bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300' %>
-    </div>
-  </div>
-</div>
-
 <% if @events.any? %>
   <div class="bg-white shadow overflow-hidden sm:rounded-md">
     <ul class="divide-y divide-gray-200">
@@ -100,14 +89,6 @@
               <div class="mt-1 flex items-center text-sm text-gray-500">
                 <div class="flex items-center">
                   <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                  </svg>
-                  <%= event['event_memberships'][0]['user_name'] %>
-                </div>
-              </div>
-              <div class="mt-1 flex items-center text-sm text-gray-500">
-                <div class="flex items-center">
-                  <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                   </svg>
                   Created: <%= Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") %>
@@ -118,8 +99,8 @@
                   <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
                   </svg>
-                  <%= Time.parse(event['start_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") %> - 
-                  <%= Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") %>
+                  Start: <%= Time.parse(event['start_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") %> - 
+                  End: <%= Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") %>
                 </div>
               </div>
             </div>
@@ -129,9 +110,7 @@
     </ul>
   </div>
 
-  <div class="mt-6">
-    <%= will_paginate @events, class: 'flex justify-center' %>
-  </div>
+  <%= render 'shared/pagination', collection: @events %>
 <% else %>
   <div class="text-center py-12">
     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
