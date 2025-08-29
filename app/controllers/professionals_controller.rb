@@ -4,6 +4,13 @@ class ProfessionalsController < ApplicationController
 
   def index
     @professionals = Professional.all
+    
+    respond_to do |format|
+      format.html
+      format.csv do
+        send_data generate_professionals_csv_data, filename: "professionals_#{Date.today}.csv"
+      end
+    end
   end
 
   def new
@@ -92,6 +99,24 @@ class ProfessionalsController < ApplicationController
             event['status'].capitalize
           ]
         end
+      end
+    end
+  end
+
+  def generate_professionals_csv_data
+    CSV.generate do |csv|
+      csv << ['ID', 'Name', 'Email', 'Phone', 'Token', 'Status', 'Created At']
+      
+      @professionals.each do |professional|
+        csv << [
+          professional.id,
+          professional.name,
+          professional.email,
+          professional.phone,
+          professional.token.present? ? 'Yes' : 'No',
+          professional.token.present? ? 'Active' : 'No Token',
+          professional.created_at.in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M")
+        ]
       end
     end
   end
