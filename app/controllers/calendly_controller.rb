@@ -25,6 +25,8 @@ class CalendlyController < ApplicationController
 
     begin
       @events = CalendlyService.gather_events(filter_params) if @events.nil?
+      # Sort events by start_time in descending order (most recent first)
+      @events = @events.sort_by { |event| event.is_a?(Hash) && event[:error] ? Time.at(0) : Time.parse(event['start_time']) }.reverse
     rescue => e
       Rails.logger.error "Error gathering events: #{e.message}"
       @events = []
@@ -41,6 +43,8 @@ class CalendlyController < ApplicationController
     filter_params = params.permit!.slice(:status, :start_date, :end_date)
 
     events = CalendlyService.gather_events(filter_params)
+    # Sort events by start_time in descending order (most recent first)
+    events = events.sort_by { |event| event.is_a?(Hash) && event[:error] ? Time.at(0) : Time.parse(event['start_time']) }.reverse
 
     respond_to do |format|
       format.csv do

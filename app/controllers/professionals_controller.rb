@@ -27,6 +27,8 @@ class ProfessionalsController < ApplicationController
     filter_params = params.permit!.slice(:status, :start_date, :end_date)
     @professional = Professional.find(params[:id])
     @events = CalendlyService.professional_events(@professional, filter_params) || []
+    # Sort events by start_time in descending order (most recent first)
+    @events = @events.sort_by { |event| event.is_a?(Hash) && event[:error] ? Time.at(0) : Time.parse(event['start_time']) }.reverse
     @events_count = @events.count
     @events = @events.paginate(page: params[:page], per_page: 15)
     @events
@@ -36,6 +38,8 @@ class ProfessionalsController < ApplicationController
     filter_params = params.permit!.slice(:status, :start_date, :end_date)
     @professional = Professional.find(params[:id])
     events = CalendlyService.professional_events(@professional, filter_params)
+    # Sort events by start_time in descending order (most recent first)
+    events = events.sort_by { |event| event.is_a?(Hash) && event[:error] ? Time.at(0) : Time.parse(event['start_time']) }.reverse
 
     respond_to do |format|
       format.csv do
