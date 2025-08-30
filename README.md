@@ -44,7 +44,7 @@ RAILS_LOG_TO_STDOUT=true
 
 ### 1. Clonar el repositorio
 ```bash
-git clone https://github.com/quequeo/enronda-backoffice #[URL_DEL_REPOSITORIO]
+git clone [URL_DEL_REPOSITORIO]
 cd enronda-backoffice
 ```
 
