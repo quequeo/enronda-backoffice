@@ -16,6 +16,10 @@ Rails.application.routes.draw do
   get '/calendly/all', to: 'calendly#all'
   get '/calendly/all_csv', to: 'calendly#all_csv', defaults: { format: 'csv' }
 
+  # Organization routes for efficient event fetching
+  get 'organization/events', to: 'organization#events'
+  get 'organization/events_csv', to: 'organization#events_csv', defaults: { format: 'csv' }
+
   resources :professionals do
     member do
       delete :destroy, as: :delete

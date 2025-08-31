@@ -1,0 +1,183 @@
+<div class="min-h-screen bg-gray-50 py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Organization Events</h1>
+          <p class="mt-2 text-sm text-gray-600">All Calendly events from the organization</p>
+        </div>
+        <div class="flex space-x-3">
+          <!-- Export CSV Button -->
+          <%= link_to organization_events_csv_path(request.query_parameters), 
+                      class: 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300 flex items-center' do %>
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export CSV
+          <% end %>
+          
+          <!-- Show Filters Button (Mobile Only) -->
+          <button id="filter-toggle" class="sm:hidden bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300 flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+            </svg>
+            Show Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div id="filters-section" class="sm:block hidden mb-6 bg-white rounded-lg shadow p-6">
+      <%= form_with url: organization_events_path, method: :get, local: true, class: 'space-y-4' do |form| %>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <!-- Status Filter -->
+          <div>
+            <%= form.label :status, 'Status', class: 'block text-sm font-medium text-gray-700 mb-1' %>
+            <%= form.select :status, 
+                options_for_select([
+                  ['All', 'all'],
+                  ['Active', 'active'],
+                  ['Canceled', 'canceled']
+                ], params[:status] || 'all'),
+                {},
+                class: 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm' %>
+          </div>
+
+          <!-- Start Date Filter -->
+          <div>
+            <%= form.label :start_date, 'Start Date', class: 'block text-sm font-medium text-gray-700 mb-1' %>
+            <%= form.date_field :start_date, 
+                value: params[:start_date],
+                class: 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm' %>
+          </div>
+
+          <!-- End Date Filter -->
+          <div>
+            <%= form.label :end_date, 'End Date', class: 'block text-sm font-medium text-gray-700 mb-1' %>
+            <%= form.date_field :end_date, 
+                value: params[:end_date],
+                class: 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm' %>
+          </div>
+
+          <!-- Apply Filters Button -->
+          <div class="flex items-end">
+            <%= form.submit 'Apply Filters', 
+                class: 'w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300 flex items-center justify-center' do %>
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+              </svg>
+              Apply Filters
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="hidden flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <span class="ml-3 text-gray-600">Processing... Please wait!</span>
+    </div>
+
+    <!-- Events List -->
+    <div id="events-list" class="bg-white shadow overflow-hidden sm:rounded-md">
+      <% if @events.any? %>
+        <ul class="divide-y divide-gray-200">
+          <% @events.each do |event| %>
+            <li class="px-6 py-4 hover:bg-gray-50">
+              <div class="flex items-center justify-between">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center space-x-3">
+                    <h3 class="text-lg font-medium text-gray-900 truncate">
+                      <%= event['name'] %>
+                    </h3>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                      <%= case event['status']
+                          when 'active'
+                            'bg-green-100 text-green-800 border border-green-200'
+                          when 'canceled'
+                            'bg-red-100 text-red-800 border border-red-200'
+                          else
+                            'bg-gray-100 text-gray-800 border border-gray-200'
+                          end %>">
+                      <%= event['status']&.titleize %>
+                    </span>
+                  </div>
+                  <div class="mt-2 flex items-center text-sm text-gray-500 space-x-4">
+                    <div class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Created: <%= Time.parse(event['created_at']).strftime('%B %d, %Y at %I:%M %p') %>
+                    </div>
+                    <div class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Start: <%= Time.parse(event['start_time']).strftime('%B %d, %Y at %I:%M %p') %>
+                    </div>
+                    <div class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      End: <%= Time.parse(event['end_time']).strftime('%B %d, %Y at %I:%M %p') %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+          <%= will_paginate @events, 
+              class: 'flex items-center space-x-2',
+              previous_label: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>',
+              next_label: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>',
+              inner_window: 1,
+              outer_window: 1 %>
+        </div>
+      <% else %>
+        <div class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">No events found</h3>
+          <p class="mt-1 text-sm text-gray-500">Try adjusting your filters or check back later.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const filterToggle = document.getElementById('filter-toggle');
+    const filtersSection = document.getElementById('filters-section');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const eventsList = document.getElementById('events-list');
+
+    // Mobile filter toggle
+    if (filterToggle) {
+      filterToggle.addEventListener('click', function() {
+        const isHidden = filtersSection.classList.contains('hidden');
+        filtersSection.classList.toggle('hidden');
+        filterToggle.innerHTML = isHidden ? 
+          '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>Hide Filters' :
+          '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" /></svg>Show Filters';
+      });
+    }
+
+    // Show loading spinner when form is submitted
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function() {
+        loadingSpinner.classList.remove('hidden');
+        eventsList.classList.add('hidden');
+      });
+    }
+  });
+</script>

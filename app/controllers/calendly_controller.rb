@@ -46,6 +46,7 @@ class CalendlyController < ApplicationController
   end
 
   def events
+    byebug
     if @calendly_oauth&.access_token && @calendly_oauth&.organization
       query_params = build_query_params
       response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
@@ -72,6 +73,7 @@ class CalendlyController < ApplicationController
   end
 
   def set_calendly_oauth
+    byebug
     @calendly_oauth ||= CalendlyOAuth.last
   end
 
