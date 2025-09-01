@@ -181,7 +181,8 @@ class CalendlyController < ApplicationController
       min_start_time: (Time.now - 90.days).iso8601,
       status: params[:status],
       min_start_time: params[:min_start_time],
-      max_start_time: params[:max_start_time]
+      max_start_time: params[:max_start_time],
+      sort: 'start_time:desc'
     }.compact
   end
 

@@ -4,10 +4,6 @@ Rails.application.routes.draw do
   }
 
   root 'static_pages#home'
-  # get 'static_pages/about'
-  # get 'static_pages/contact'
-  # get 'static_pages/privacy_policy'
-  # get 'static_pages/terms_of_service'
 
   get 'calendly/auth', to: 'calendly#auth'
   get 'calendly/callback', to: 'calendly#callback'
@@ -16,8 +12,6 @@ Rails.application.routes.draw do
   get '/calendly/all', to: 'calendly#all'
   get '/calendly/all_csv', to: 'calendly#all_csv', defaults: { format: 'csv' }
 
-
-
   resources :professionals do
     member do
       delete :destroy, as: :delete
@@ -25,4 +19,8 @@ Rails.application.routes.draw do
       get :events_csv, defaults: { format: 'csv' }
     end
   end
+
+  # Organization routes
+  get '/organization/events', to: 'organization#events'
+  get '/organization/events_csv', to: 'organization#events_csv', defaults: { format: 'csv' }
 end

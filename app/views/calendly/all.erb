@@ -1,70 +1,193 @@
-<h1 class="text-2xl font-bold mb-6">Professionals' Events</h1>
+<div class="min-h-screen bg-gray-50 py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-center">
+        <div class="flex-shrink-0 h-16 w-16">
+          <div class="h-16 w-16 rounded-full bg-purple-100 flex items-center justify-center">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <h1 class="text-3xl font-bold text-gray-900">Professionals' Events</h1>
+          <p class="text-sm text-gray-600">All events from your team of professionals</p>
+        </div>
+      </div>
+    </div>
 
-<div class="flex flex-wrap items-end space-x-2 mb-4">
-  <%= form_tag(calendly_all_path, method: :get, class: 'flex items-end space-x-2', id: 'events-filter-form') do %>
-    <div class="flex-grow md:flex-grow-0 mb-2 md:mb-0">
-      <%= label_tag :status, "Status", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= select_tag :status, options_for_select([['All', ''], ['Active', 'active'], ['Canceled', 'canceled']], params[:status]), class: 'form-select w-full md:w-40 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50' %>
-    </div>
-    <div class="flex-grow md:flex-grow-0 mb-2 md:mb-0">
-      <%= label_tag :start_date, "Start Date", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= date_field_tag :start_date, params[:start_date], class: 'form-input w-full md:w-40 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50' %>
-    </div>
-    <div class="flex-grow md:flex-grow-0 mb-2 md:mb-0">
-      <%= label_tag :end_date, "End Date", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= date_field_tag :end_date, params[:end_date], class: 'form-input w-full md:w-40 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50' %>
-    </div>
-    <div class="flex items-center space-x-2">
-      <%= submit_tag 'Apply Filters', class: 'bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded mb-2 md:mb-0' %>
-      <%= link_to 'Clear Filters', calendly_all_path, class: 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mb-2 md:mb-0' %>
-      <% if @events.nil? || @events == [] %>
-      <% else %>
-        <%= submit_tag 'Download Events', 
-          formaction: calendly_all_csv_path, 
-          class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105 mb-2 md:mb-0',
-          id: 'download-events-link'  
-        %>
+    <!-- Filters Section -->
+    <div class="mb-6 bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Filter Events</h3>
+      <%= form_tag(calendly_all_path, method: :get, class: 'space-y-4', id: 'events-filter-form') do %>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <%= label_tag :status, "Status", class: "block text-sm font-medium text-gray-700 mb-2" %>
+            <%= select_tag :status, options_for_select([['All', ''], ['Active', 'active'], ['Canceled', 'canceled']], params[:status]), class: 'w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 focus:ring-opacity-50' %>
+          </div>
+          <div>
+            <%= label_tag :start_date, "Start Date", class: "block text-sm font-medium text-gray-700 mb-2" %>
+            <%= date_field_tag :start_date, params[:start_date], class: 'w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 focus:ring-opacity-50' %>
+          </div>
+          <div>
+            <%= label_tag :end_date, "End Date", class: "block text-sm font-medium text-gray-700 mb-2" %>
+            <%= date_field_tag :end_date, params[:end_date], class: 'w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 focus:ring-opacity-50' %>
+          </div>
+        </div>
+        
+        <div class="flex flex-wrap items-center justify-between pt-4 border-t border-gray-200">
+          <div class="flex space-x-3">
+            <%= submit_tag 'Apply Filters', class: 'bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105' %>
+            <%= link_to 'Clear Filters', calendly_all_path, class: 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md transition duration-300 ease-in-out' %>
+          </div>
+          
+          <% if @events.present? && @events != [] %>
+            <div class="mt-3 sm:mt-0">
+              <%= submit_tag 'Download Events', 
+                formaction: calendly_all_csv_path, 
+                class: 'bg-purple-800 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105',
+                id: 'download-events-link'  
+              %>
+            </div>
+          <% end %>
+        </div>
       <% end %>
     </div>
-  <% end %>
-</div>
 
-
-<% if @events.nil? %>
-  <p class="text-purple-600">No events found</p>
-<% else %>
-  <div class="overflow-x-auto mt-4">
-    <table class="min-w-full bg-white border border-purple-400">
-      <thead>
-        <tr>
-          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">User Name</th>
-          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Event Name</th>
-          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Created At</th>
-          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Start Time</th>
-          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">End Time</th>
-          <th class="py-2 px-4 border-b border-purple-200 bg-purple-100 text-left text-xs font-semibold text-purple-600 uppercase tracking-wider">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @events.each do |event| %>
-          <tr class="hover:bg-purple-200">
-            <% if event[:error].present? %>
-              <td class="py-2 px-2 border-b border-purple-200"><%= event[:professional_name] %></td>
-              <td class="py-2 px-2 border-b border-purple-200" colspan="5"><%= event[:error] %></td>
-            <% else %>
-              <td class="py-2 px-2 border-b border-purple-200"><%= event['event_memberships'].present? ? event['event_memberships'][0]['user_name'] : 'No user' %></td>
-              <td class="py-2 px-4 border-b border-purple-200"><%= event['name'].present? ? event['name'] : 'No event name' %></td>
-              <td class="py-2 px-2 border-b border-purple-200"><%= event['created_at'].present? ? Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") : 'No created at' %></td>
-              <td class="py-2 px-2 border-b border-purple-200"><%= event['start_time'].present? ? Time.parse(event['start_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") : 'No start time' %></td>
-              <td class="py-2 px-2 border-b border-purple-200"><%= event['end_time'].present? ? Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%Y-%m-%d %H:%M") : 'No end time' %></td>
-              <td class="py-2 px-2 border-b border-purple-200"><%= event['status'].present? ? event['status'].capitalize : 'No status' %></td>
-            <% end %>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+    <% if @events.nil? %>
+      <!-- Empty State -->
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No events found</h3>
+        <p class="mt-1 text-sm text-gray-500">There are no events to display at the moment.</p>
+      </div>
+    <% else %>
+      <!-- Events Table -->
+      <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Events List</h3>
+          <p class="mt-1 max-w-2xl text-sm text-gray-500">All events from your professionals</p>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">User Name</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">Event Name</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Created At</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Start Time</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">End Time</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Status</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% @events.each do |event| %>
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <% if event[:error].present? %>
+                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                       <%= event[:professional_name] %>
+                     </td>
+                     <td class="px-4 py-4 text-sm text-red-600" colspan="5">
+                      <div class="flex items-center">
+                        <svg class="w-4 h-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <%= event[:error] %>
+                      </div>
+                    </td>
+                  <% else %>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-8 w-8">
+                          <div class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                            <span class="text-sm font-medium text-purple-600">
+                              <%= event['event_memberships'].present? ? event['event_memberships'][0]['user_name']&.first&.upcase || 'U' : 'U' %>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="ml-3">
+                          <div class="text-sm font-medium text-gray-900">
+                            <%= event['event_memberships'].present? ? event['event_memberships'][0]['user_name'] : 'No user' %>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <td class="px-4 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">
+                        <%= event['name'].present? ? event['name'] : 'No event name' %>
+                      </div>
+                    </td>
+                    
+                    <td class="px-4 py-4 whitespace-nowrap">
+                      <div class="flex items-center text-sm text-gray-500">
+                        <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <%= event['created_at'].present? ? Time.parse(event['created_at']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%b %d, %H:%M") : 'No created at' %>
+                      </div>
+                    </td>
+                    
+                    <td class="px-4 py-4 whitespace-nowrap">
+                      <div class="flex items-center text-sm text-gray-900">
+                        <svg class="w-4 h-4 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <%= event['start_time'].present? ? Time.parse(event['start_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%b %d, %H:%M") : 'No start time' %>
+                      </div>
+                    </td>
+                    
+                    <td class="px-4 py-4 whitespace-nowrap">
+                      <div class="flex items-center text-sm text-gray-900">
+                        <svg class="w-4 h-4 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <%= event['end_time'].present? ? Time.parse(event['end_time']).in_time_zone("America/Argentina/Buenos_Aires").strftime("%b %d, %H:%M") : 'No end time' %>
+                      </div>
+                    </td>
+                    
+                    <td class="px-4 py-4 whitespace-nowrap">
+                      <% status_class = case event['status']
+                         when 'active'
+                           'bg-green-100 text-green-800'
+                         when 'canceled'
+                           'bg-red-100 text-red-800'
+                         when 'completed'
+                           'bg-blue-100 text-blue-800'
+                         else
+                           'bg-gray-100 text-gray-800'
+                         end %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= status_class %>">
+                        <% if event['status'] == 'active' %>
+                          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        <% elsif event['status'] == 'canceled' %>
+                          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        <% elsif event['status'] == 'completed' %>
+                          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        <% end %>
+                        <%= event['status'].present? ? event['status'].capitalize : 'No status' %>
+                      </span>
+                    </td>
+                  <% end %>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% end %>
   </div>
-<% end %>
+</div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
