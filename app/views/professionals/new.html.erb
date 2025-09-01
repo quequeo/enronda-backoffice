@@ -19,7 +19,7 @@
 
     <!-- Form Card -->
     <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-      <%= form_with(model: @professional, local: true, class: 'p-6 sm:p-8') do |form| %>
+      <%= form_with(model: @professional, local: true, class: 'p-6 sm:p-8', html: { autocomplete: 'off' }) do |form| %>
         <!-- Error Messages -->
         <% if @professional.errors.any? %>
           <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
@@ -55,7 +55,7 @@
               Name <span class="text-red-500 ml-1">*</span>
             </div>
           <% end %>
-          <%= form.text_field :name, required: true, placeholder: "Enter professional name", class: 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm' %>
+          <%= form.text_field :name, required: true, placeholder: "Enter professional name", autocomplete: "off", value: "", class: 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm' %>
         </div>
 
         <!-- Token Field -->
@@ -69,7 +69,7 @@
             </div>
           <% end %>
           <div class="relative">
-            <%= form.text_field :token, required: true, placeholder: "Enter Calendly token", id: "token-field", class: 'block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm font-mono' %>
+            <%= form.text_field :token, required: true, placeholder: "Enter Calendly token", id: "token-field", autocomplete: "off", value: "", class: 'block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm font-mono' %>
             <button type="button" onclick="toggleTokenVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center">
               <svg id="token-eye" class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -90,7 +90,7 @@
               Phone
             </div>
           <% end %>
-          <%= form.text_field :phone, placeholder: "Enter phone number", class: 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm' %>
+          <%= form.text_field :phone, placeholder: "Enter phone number", autocomplete: "off", value: "", class: 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm' %>
         </div>
 
         <!-- Email Field -->
@@ -103,7 +103,7 @@
               Email
             </div>
           <% end %>
-          <%= form.email_field :email, placeholder: "Enter email address", class: 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm' %>
+          <%= form.email_field :email, placeholder: "Enter email address", autocomplete: "off", value: "", class: 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm' %>
         </div>
 
         <!-- Form Actions -->
@@ -143,6 +143,17 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // Clear all form fields to prevent pre-filled values
+    const form = document.querySelector('form');
+    if (form) {
+      const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+      inputs.forEach(input => {
+        input.value = '';
+        input.setAttribute('autocomplete', 'off');
+      });
+    }
+    
+    // Set token field to password type
     const tokenField = document.getElementById('token-field');
     if (tokenField) {
       tokenField.type = 'password';
