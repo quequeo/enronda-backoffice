@@ -1,12 +1,7 @@
 <% if user_signed_in? %>
   <div class="flex flex-col items-center mt-8">
-    <div class="flex flex-wrap justify-center space-x-4 mb-4">
-      <%= link_to 'Enronda Sessions', calendly_events_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105' %>
-      <%= link_to 'List of Professionals', professionals_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105' %>
-      <%= link_to "Professionals' Events", calendly_all_path, class: 'bg-purple-800 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105' %>
-    </div>
     <div class="flex justify-center mt-8">
-      <%= image_tag 'redondo_violeta.png', alt: 'Enronda Logo', style: 'width: 600px; height: 600px; margin-top: -2rem;' %>
+      <%= image_tag 'redondo_violeta.png', alt: 'Enronda Logo', style: 'width: 600px; height: 600px; margin-top: -6rem;' %>
     </div>
   </div>
 <% end %>
