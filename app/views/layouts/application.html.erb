@@ -28,6 +28,16 @@
           <p class="text-white text-xl font-semibold">Processing... Please wait!</p>
         </div>
         
+        <!-- Navigation Buttons -->
+        <nav class="flex items-center space-x-3">
+          <% if user_signed_in? %>
+            <%= link_to 'Home', root_path, class: "text-white hover:text-purple-200 font-medium py-2 px-3 rounded-lg transition duration-300 ease-in-out hover:bg-purple-700" %>
+            <%= link_to 'Enronda Sessions', calendly_events_path, class: "text-white hover:text-purple-200 font-medium py-2 px-3 rounded-lg transition duration-300 ease-in-out hover:bg-purple-700" %>
+            <%= link_to 'Professionals', professionals_path, class: "text-white hover:text-purple-200 font-medium py-2 px-3 rounded-lg transition duration-300 ease-in-out hover:bg-purple-700" %>
+            <%= link_to 'Professionals Events', calendly_all_path, class: "text-white hover:text-purple-200 font-medium py-2 px-3 rounded-lg transition duration-300 ease-in-out hover:bg-purple-700" %>
+          <% end %>
+        </nav>
+        
         <nav class="flex items-center space-x-4">
           <% if user_signed_in? %>
             <%= button_to 'Logout', destroy_user_session_path, method: :delete, class: "bg-purple-500 hover:bg-purple-400 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105" %>
