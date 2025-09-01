@@ -2,7 +2,7 @@ class ProfessionalsController < ApplicationController
   require 'will_paginate/array'
 
   def index
-    @professionals = Professional.all
+    @professionals = Professional.all.order(:name)
   end
 
   def new

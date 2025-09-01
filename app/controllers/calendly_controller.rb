@@ -26,6 +26,12 @@ class CalendlyController < ApplicationController
 
     @events = CalendlyService.gather_events(filter_params) if @events.nil?
 
+    # Sort events by start_time (most recent first) and filter out error entries
+    if @events.present?
+      valid_events = @events.reject { |event| event.is_a?(Hash) && event[:error] }
+      @events = valid_events.sort_by { |event| event['start_time'] }.reverse
+    end
+
     unless Rails.env.production? && @events.present?
       Rails.cache.write(cache_key, @events, expires_in: 4.hour)
     end
@@ -38,6 +44,12 @@ class CalendlyController < ApplicationController
 
     events = CalendlyService.gather_events(filter_params)
 
+    # Sort events by start_time (most recent first) and filter out error entries
+    if events.present?
+      valid_events = events.reject { |event| event.is_a?(Hash) && event[:error] }
+      events = valid_events.sort_by { |event| event['start_time'] }.reverse
+    end
+
     respond_to do |format|
       format.csv do
         send_data generate_csv_data(events), filename: "professional_events_#{Date.today}.csv"
@@ -46,7 +58,6 @@ class CalendlyController < ApplicationController
   end
 
   def events
-    byebug
     if @calendly_oauth&.access_token && @calendly_oauth&.organization
       query_params = build_query_params
       response = fetch_events_from_calendly(@calendly_oauth.access_token, query_params)
@@ -73,7 +84,6 @@ class CalendlyController < ApplicationController
   end
 
   def set_calendly_oauth
-    byebug
     @calendly_oauth ||= CalendlyOAuth.last
   end
 

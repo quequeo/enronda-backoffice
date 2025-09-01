@@ -49,11 +49,10 @@ class CalendlyService
           end
         end
 
-        query_params = { organization: professional.organization, count: 100 }
+        query_params = { organization: professional.organization, count: 100, sort: 'start_time:desc' }
         query_params.merge!(status: status) if status.present?
         query_params.merge!(min_start_time: start_date.iso8601)
         query_params.merge!(max_start_time: end_date.iso8601) if end_date.present?
-        query_params.merge!(sort: 'start_time:desc') if status.present? || end_date.present? || start_date.present?
 
         response_events = HTTParty.get('https://api.calendly.com/scheduled_events',
           headers: { 'Authorization' => "Bearer #{professional.token}", 'Content-Type' => 'application/json' },
@@ -96,11 +95,10 @@ class CalendlyService
         end
       end
 
-      query_params = { organization: professional.organization, count: 100 }
+      query_params = { organization: professional.organization, count: 100, sort: 'start_time:desc' }
       query_params.merge!(status: status) if status.present?
       query_params.merge!(min_start_time: start_date.iso8601)
       query_params.merge!(max_start_time: end_date.iso8601) if end_date.present?
-      query_params.merge!(sort: 'start_time:desc') if status.present? || end_date.present? || start_date.present?
 
       response_events = HTTParty.get('https://api.calendly.com/scheduled_events',
         headers: { 'Authorization' => "Bearer #{professional.token}", 'Content-Type' => 'application/json' },

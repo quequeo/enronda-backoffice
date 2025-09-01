@@ -90,7 +90,16 @@
     }
 
     form.addEventListener('submit', function(e) {
+      // Check if the submitter is the download button
+      if (e.submitter && e.submitter.id === 'download-events-link') {
+        console.log('Download button clicked - allowing normal form submission');
+        return; // Allow normal form submission for download
+      }
+      
+      // For other form submissions, prevent default and use AJAX
       e.preventDefault();
+      console.log('Regular form submission - using AJAX');
+      
       showLoading().then(() => {
         fetch(this.action + '?' + new URLSearchParams(new FormData(this)))
           .then(response => response.text())
@@ -106,7 +115,8 @@
 
     if (downloadLink) {
       downloadLink.addEventListener('click', function(e) {
-        showLoading(2000).then(hideLoading);  // Mostramos la animación por 2 segundos para descargas
+        console.log('Download button clicked - showing loading animation');
+        showLoading(2000).then(hideLoading);
       });
     }
   });
