@@ -26,6 +26,7 @@ class ProfessionalsController < ApplicationController
     filter_params = params.permit!.slice(:status, :start_date, :end_date)
     @professional = Professional.find(params[:id])
     @events = CalendlyService.professional_events(@professional, filter_params)
+    @events = @events.flatten if @events.is_a?(Array)
     @events_count = @events.count
     @events = @events.paginate(page: params[:page], per_page: 15)
     @events
@@ -35,6 +36,7 @@ class ProfessionalsController < ApplicationController
     filter_params = params.permit!.slice(:status, :start_date, :end_date)
     @professional = Professional.find(params[:id])
     events = CalendlyService.professional_events(@professional, filter_params)
+    events = events.flatten if events.is_a?(Array)
 
     respond_to do |format|
       format.csv do
